@@ -1,0 +1,372 @@
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "postgresql"
+}
+model Organization {
+ id String @id @default(uuid())
+ name String
+ timezone String @default("Asia/Kolkata")
+ createdAt DateTime @default(now())
+ members Membership[]
+ contacts Contact[]
+ clients Client[]
+ providers Provider[]
+ definitions ProductDefinition[]
+ opportunities Opportunity[]
+ products ClientProduct[]
+ events FinancialEvent[]
+ followups FollowUp[]
+ documents Document[]
+ activities Activity[]
+ notifications Notification[]
+ imports ImportJob[]
+ jobs Job[]
+}
+model User {
+ id String @id @default(uuid())
+ name String
+ email String @unique
+ passwordHash String
+ active Boolean @default(true)
+ createdAt DateTime @default(now())
+ memberships Membership[]
+ resets PasswordReset[]
+}
+model Membership {
+ id String @id @default(uuid())
+ organizationId String
+ userId String
+ role String
+ organization Organization @relation(fields:[organizationId],references:[id],onDelete:Cascade)
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ @@unique([organizationId,userId])
+}
+model PasswordReset {
+ id String @id @default(uuid())
+ tokenHash String @unique
+ userId String
+ expiresAt DateTime
+ usedAt DateTime?
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+}
+model Contact {
+ id String @id @default(uuid())
+ organizationId String
+ name String
+ phone String
+ email String?
+ kind String @default("Individual")
+ dob DateTime? @db.Date
+ gender String?
+ occupation String?
+ address String?
+ city String?
+ state String?
+ version Int @default(1)
+ organization Organization @relation(fields:[organizationId],references:[id])
+ business Business?
+ client Client?
+ relationsFrom ContactRelationship[] @relation("from")
+ relationsTo ContactRelationship[] @relation("to")
+ @@index([organizationId,name])
+ @@index([organizationId,phone])
+ @@index([organizationId,email])
+}
+model Business {
+ id String @id @default(uuid())
+ contactId String @unique
+ registrationNumber String?
+ industry String?
+ contact Contact @relation(fields:[contactId],references:[id],onDelete:Cascade)
+}
+model ContactRelationship {
+ id String @id @default(uuid())
+ fromId String
+ toId String
+ type String
+ from Contact @relation("from",fields:[fromId],references:[id],onDelete:Cascade)
+ to Contact @relation("to",fields:[toId],references:[id],onDelete:Cascade)
+ @@unique([fromId,toId,type])
+}
+model Client {
+ id String @id @default(uuid())
+ organizationId String
+ contactId String @unique
+ isClient Boolean @default(true)
+ status String @default("Active")
+ source String @default("Direct")
+ ownerId String
+ annualIncome String?
+ riskProfile String?
+ investmentInterest String?
+ loanInterest String?
+ preferredContact String?
+ notesText String?
+ version Int @default(1)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ organization Organization @relation(fields:[organizationId],references:[id])
+ contact Contact @relation(fields:[contactId],references:[id])
+ opportunities Opportunity[]
+ products ClientProduct[]
+ events FinancialEvent[]
+ followups FollowUp[]
+ communications Communication[]
+ documents Document[]
+ notes Note[]
+ tags ClientTag[]
+ consents Consent[]
+ @@index([organizationId,status])
+ @@index([organizationId,ownerId])
+}
+model Tag {
+ id String @id @default(uuid())
+ name String @unique
+ clients ClientTag[]
+}
+model ClientTag {
+ clientId String
+ tagId String
+ client Client @relation(fields:[clientId],references:[id],onDelete:Cascade)
+ tag Tag @relation(fields:[tagId],references:[id])
+ @@id([clientId,tagId])
+}
+model Consent {
+ id String @id @default(uuid())
+ clientId String
+ channel String
+ granted Boolean
+ source String
+ recordedAt DateTime @default(now())
+ client Client @relation(fields:[clientId],references:[id])
+ @@index([clientId,channel,recordedAt])
+}
+model Provider {
+ id String @id @default(uuid())
+ organizationId String
+ name String
+ organization Organization @relation(fields:[organizationId],references:[id])
+ definitions ProductDefinition[]
+ @@unique([organizationId,name])
+}
+model ProductDefinition {
+ id String @id @default(uuid())
+ organizationId String
+ providerId String
+ name String
+ category String
+ organization Organization @relation(fields:[organizationId],references:[id])
+ provider Provider @relation(fields:[providerId],references:[id])
+ products ClientProduct[]
+ @@unique([organizationId,providerId,name])
+}
+model ClientProduct {
+ id String @id @default(uuid())
+ organizationId String
+ clientId String
+ definitionId String
+ opportunityId String? @unique
+ identifier String
+ status String @default("Application")
+ currency String @default("INR")
+ premiumMinor BigInt?
+ principalMinor BigInt?
+ expectedCommissionMinor BigInt @default(0)
+ insuranceDetails Json?
+ loanDetails Json?
+ investmentDetails Json?
+ startDate DateTime @db.Date
+ version Int @default(1)
+ createdAt DateTime @default(now())
+ organization Organization @relation(fields:[organizationId],references:[id])
+ client Client @relation(fields:[clientId],references:[id])
+ definition ProductDefinition @relation(fields:[definitionId],references:[id])
+ opportunity Opportunity? @relation(fields:[opportunityId],references:[id])
+ events FinancialEvent[]
+ followups FollowUp[]
+ @@unique([organizationId,identifier])
+ @@index([organizationId,clientId])
+}
+model Opportunity {
+ id String @id @default(uuid())
+ organizationId String
+ clientId String
+ requirement String
+ stage String @default("New Enquiries")
+ ownerId String
+ priority String @default("Normal")
+ source String @default("Referral")
+ notes String?
+ nextAction String
+ nextFollowUp DateTime?
+ lostReason String?
+ version Int @default(1)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ organization Organization @relation(fields:[organizationId],references:[id])
+ client Client @relation(fields:[clientId],references:[id])
+ history OpportunityStageHistory[]
+ product ClientProduct?
+ followups FollowUp[]
+ @@index([organizationId,stage])
+}
+model OpportunityStageHistory {
+ id String @id @default(uuid())
+ opportunityId String
+ fromStage String?
+ toStage String
+ reason String?
+ actorId String
+ createdAt DateTime @default(now())
+ opportunity Opportunity @relation(fields:[opportunityId],references:[id])
+}
+model FinancialEvent {
+ id String @id @default(uuid())
+ organizationId String
+ clientId String
+ productId String
+ type String
+ dueDate DateTime @db.Date
+ amountMinor BigInt
+ amountMeaning String
+ currency String @default("INR")
+ status String @default("Pending")
+ recurrenceMonths Int?
+ version Int @default(1)
+ completedAt DateTime?
+ organization Organization @relation(fields:[organizationId],references:[id])
+ client Client @relation(fields:[clientId],references:[id])
+ product ClientProduct @relation(fields:[productId],references:[id])
+ payments Payment[]
+ followups FollowUp[]
+ @@unique([productId,type,dueDate])
+ @@index([organizationId,dueDate,status])
+}
+model Payment {
+ id String @id @default(uuid())
+ eventId String
+ amountMinor BigInt
+ reference String
+ recordedBy String
+ recordedAt DateTime @default(now())
+ event FinancialEvent @relation(fields:[eventId],references:[id])
+ @@unique([eventId,reference])
+}
+model FollowUp {
+ id String @id @default(uuid())
+ organizationId String
+ clientId String
+ opportunityId String?
+ productId String?
+ eventId String?
+ ownerId String
+ channel String
+ dueAt DateTime
+ priority String @default("Normal")
+ notes String
+ state String @default("pending")
+ outcome String?
+ completedAt DateTime?
+ version Int @default(1)
+ createdAt DateTime @default(now())
+ organization Organization @relation(fields:[organizationId],references:[id])
+ client Client @relation(fields:[clientId],references:[id])
+ opportunity Opportunity? @relation(fields:[opportunityId],references:[id])
+ product ClientProduct? @relation(fields:[productId],references:[id])
+ event FinancialEvent? @relation(fields:[eventId],references:[id])
+ @@index([organizationId,state,dueAt])
+}
+model Communication {
+ id String @id @default(uuid())
+ clientId String
+ channel String
+ event String
+ body String?
+ providerId String?
+ actorId String
+ createdAt DateTime @default(now())
+ client Client @relation(fields:[clientId],references:[id])
+ @@index([clientId,createdAt])
+}
+model Document {
+ id String @id @default(uuid())
+ organizationId String
+ clientId String
+ name String
+ key String @unique
+ contentType String
+ purpose String @default("Document")
+ size Int
+ status String @default("Quarantined")
+ uploadedBy String
+ createdAt DateTime @default(now())
+ organization Organization @relation(fields:[organizationId],references:[id])
+ client Client @relation(fields:[clientId],references:[id])
+ @@index([organizationId,clientId])
+}
+model Note {
+ id String @id @default(uuid())
+ clientId String
+ body String
+ authorId String
+ createdAt DateTime @default(now())
+ client Client @relation(fields:[clientId],references:[id])
+}
+model Notification {
+ id String @id @default(uuid())
+ organizationId String
+ userId String
+ title String
+ link String
+ readAt DateTime?
+ createdAt DateTime @default(now())
+ organization Organization @relation(fields:[organizationId],references:[id])
+ @@index([organizationId,userId,readAt])
+}
+model Activity {
+ id String @id @default(uuid())
+ organizationId String
+ actorId String
+ action String
+ entityType String
+ entityId String
+ summary String
+ requestId String?
+ createdAt DateTime @default(now())
+ organization Organization @relation(fields:[organizationId],references:[id])
+ @@index([organizationId,createdAt])
+}
+model ImportJob {
+ id String @id @default(uuid())
+ organizationId String
+ actorId String
+ rows Json
+ result Json?
+ state String @default("Preview")
+ createdAt DateTime @default(now())
+ organization Organization @relation(fields:[organizationId],references:[id])
+}
+model Job {
+ id String @id @default(uuid())
+ organizationId String
+ key String @unique
+ type String
+ payload Json
+ runAt DateTime
+ state String @default("pending")
+ attempts Int @default(0)
+ lockedAt DateTime?
+ lastError String?
+ createdAt DateTime @default(now())
+ organization Organization @relation(fields:[organizationId],references:[id])
+ @@index([state,runAt])
+}
+model Session {
+ sid String @id @db.VarChar
+ sess Json @db.Json
+ expire DateTime @db.Timestamp(6)
+ @@index([expire],map:"IDX_session_expire")
+ @@map("session")
+}

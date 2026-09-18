@@ -1,0 +1,5577 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Parvath FinServ CRM",
+    "version": "1.0.0",
+    "description": "All business endpoints require a workspace-scoped session. Mutations require the CSRF token returned by /auth/csrf or /auth/login. Dates use Asia/Kolkata; money is an integer string in paise. See docs/api.md for lifecycle contracts."
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "parvath.sid"
+      }
+    },
+    "schemas": {
+      "Client": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  {
+                    "type": "string",
+                    "const": ""
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "default": "Individual",
+            "type": "string",
+            "enum": [
+              "Individual",
+              "Business"
+            ]
+          },
+          "dob": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  {
+                    "type": "string",
+                    "const": ""
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occupation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "default": "Direct",
+            "type": "string",
+            "maxLength": 80
+          },
+          "annualIncome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "riskProfile": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "investmentInterest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "loanInterest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preferredContact": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notesText": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "registrationNumber": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "industry": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "allowDuplicate": {
+            "default": false,
+            "type": "boolean"
+          },
+          "duplicateReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            }
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
+      "Opportunity": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "requirement": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "priority": {
+            "default": "Normal",
+            "type": "string",
+            "enum": [
+              "Normal",
+              "High",
+              "Urgent"
+            ]
+          },
+          "source": {
+            "default": "Referral",
+            "type": "string",
+            "maxLength": 80
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nextAction": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 300
+          },
+          "nextFollowUp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "stage": {
+            "default": "New Enquiries",
+            "type": "string",
+            "enum": [
+              "New Enquiries",
+              "Contacted",
+              "Qualified",
+              "Proposal / Discussion",
+              "Won",
+              "Lost"
+            ]
+          }
+        },
+        "required": [
+          "clientId",
+          "requirement",
+          "ownerId",
+          "nextAction"
+        ]
+      },
+      "FollowUp": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "Call",
+              "WhatsApp",
+              "Email",
+              "Meeting"
+            ]
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "priority": {
+            "default": "Normal",
+            "type": "string",
+            "enum": [
+              "Normal",
+              "High",
+              "Urgent"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2000
+          },
+          "opportunityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "clientId",
+          "ownerId",
+          "channel",
+          "dueAt",
+          "notes"
+        ]
+      },
+      "Product": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "definitionId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "identifier": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100
+          },
+          "status": {
+            "default": "Application",
+            "type": "string",
+            "enum": [
+              "Application",
+              "Active",
+              "Closed"
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "premiumMinor": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$"
+          },
+          "principalMinor": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$"
+          },
+          "expectedCommissionMinor": {
+            "default": "0",
+            "type": "string",
+            "pattern": "^\\d{1,15}$"
+          },
+          "insuranceDetails": {
+            "type": "object",
+            "properties": {
+              "sumAssuredMinor": {
+                "type": "string",
+                "pattern": "^\\d{1,15}$"
+              },
+              "termYears": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "sumAssuredMinor",
+              "termYears"
+            ]
+          },
+          "loanDetails": {
+            "type": "object",
+            "properties": {
+              "interestBasisPoints": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "termMonths": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              }
+            },
+            "required": [
+              "interestBasisPoints",
+              "termMonths"
+            ]
+          },
+          "investmentDetails": {
+            "type": "object",
+            "properties": {
+              "units": {
+                "type": "string",
+                "maxLength": 50
+              },
+              "maturityDate": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "units"
+            ]
+          }
+        },
+        "required": [
+          "clientId",
+          "definitionId",
+          "identifier",
+          "startDate"
+        ]
+      },
+      "FinancialEvent": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Insurance renewal",
+              "Premium payment",
+              "Loan instalment",
+              "Loan review",
+              "Bond interest",
+              "Maturity"
+            ]
+          },
+          "dueDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "amountMinor": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$"
+          },
+          "recurrenceMonths": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          }
+        },
+        "required": [
+          "productId",
+          "type",
+          "dueDate",
+          "amountMinor"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/clients": {
+      "get": {
+        "summary": "List authorized clients",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create clients",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Client"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/{id}": {
+      "get": {
+        "summary": "Get clients detail",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update with optimistic version",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Client"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/leads": {
+      "get": {
+        "summary": "List authorized leads",
+        "tags": [
+          "leads"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create leads",
+        "tags": [
+          "leads"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Opportunity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/leads/{id}": {
+      "get": {
+        "summary": "Get leads detail",
+        "tags": [
+          "leads"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update with optimistic version",
+        "tags": [
+          "leads"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Opportunity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "List authorized products",
+        "tags": [
+          "products"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create products",
+        "tags": [
+          "products"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "summary": "Get products detail",
+        "tags": [
+          "products"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update with optimistic version",
+        "tags": [
+          "products"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/renewals": {
+      "get": {
+        "summary": "List authorized renewals",
+        "tags": [
+          "renewals"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create renewals",
+        "tags": [
+          "renewals"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinancialEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/renewals/{id}": {
+      "get": {
+        "summary": "Get renewals detail",
+        "tags": [
+          "renewals"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/followups": {
+      "get": {
+        "summary": "List authorized followups",
+        "tags": [
+          "followups"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create followups",
+        "tags": [
+          "followups"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowUp"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/followups/{id}": {
+      "get": {
+        "summary": "Get followups detail",
+        "tags": [
+          "followups"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update with optimistic version",
+        "tags": [
+          "followups"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowUp"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Process liveness",
+        "tags": [
+          "health"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Database readiness",
+        "tags": [
+          "ready"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/auth/csrf": {
+      "get": {
+        "summary": "Establish CSRF token and anonymous session",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Sign in with email and password",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Destroy session",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Current membership",
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/auth/account": {
+      "patch": {
+        "summary": "Update name and optional password; currentPassword required",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "summary": "Send reset link through configured SMTP",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "summary": "Consume single-use reset token",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 64,
+                    "maxLength": 64
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12
+                  }
+                },
+                "required": [
+                  "token",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/summary": {
+      "get": {
+        "summary": "Directory counts",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/template": {
+      "get": {
+        "summary": "Download strict CSV import template",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/import/preview": {
+      "post": {
+        "summary": "Validate CSV string and report row errors",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "csv": {
+                    "type": "string",
+                    "maxLength": 1000000
+                  }
+                },
+                "required": [
+                  "csv"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/import/{id}/commit": {
+      "post": {
+        "summary": "Import reviewed valid rows idempotently",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/bulk": {
+      "post": {
+        "summary": "Change selected client status",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/{id}/relationships": {
+      "post": {
+        "summary": "Link existing contact identity",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/{id}/notes": {
+      "post": {
+        "summary": "Record client note",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/{id}/consents": {
+      "post": {
+        "summary": "Append evidence-backed consent decision",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/clients/{id}/documents": {
+      "post": {
+        "summary": "Upload multipart file into quarantine",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/documents/{id}/download": {
+      "get": {
+        "summary": "Authorized controlled download after scan",
+        "tags": [
+          "documents"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/leads/{id}/stage": {
+      "post": {
+        "summary": "Change stage with version; reason required for Lost/reopening",
+        "tags": [
+          "leads"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "stage": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "stage",
+                  "version"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/leads/{id}/convert": {
+      "post": {
+        "summary": "Accept sale idempotently and create linked application",
+        "tags": [
+          "leads"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "accepted": {
+                    "type": "boolean",
+                    "const": true
+                  },
+                  "definitionId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3
+                  }
+                },
+                "required": [
+                  "version",
+                  "accepted",
+                  "definitionId",
+                  "identifier"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/renewals/{id}/payment": {
+      "post": {
+        "summary": "Record exact minor-unit payment with unique reference",
+        "tags": [
+          "renewals"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "reference": {
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "amountMinor": {
+                    "type": "string",
+                    "pattern": "^\\d+$"
+                  }
+                },
+                "required": [
+                  "reference",
+                  "amountMinor"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/renewals/{id}/complete": {
+      "post": {
+        "summary": "Confirm fully paid event and establish next recurrence",
+        "tags": [
+          "renewals"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "version"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/renewals/{id}/reminder": {
+      "post": {
+        "summary": "Schedule durable in-app reminder",
+        "tags": [
+          "renewals"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "runAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "runAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/followups/{id}/complete": {
+      "post": {
+        "summary": "Complete/cancel with outcome and optional nextDueAt",
+        "tags": [
+          "followups"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "completed",
+                      "cancelled"
+                    ]
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "Connected",
+                      "No answer",
+                      "Documents requested",
+                      "Meeting arranged",
+                      "Not needed"
+                    ]
+                  },
+                  "nextDueAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "version",
+                  "state",
+                  "outcome"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/members": {
+      "get": {
+        "summary": "List workspace members",
+        "tags": [
+          "members"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "post": {
+        "summary": "Provision a workspace member; administrator only",
+        "tags": [
+          "members"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "Administrator",
+                      "Adviser",
+                      "Operations"
+                    ]
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "role",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/catalogue": {
+      "get": {
+        "summary": "List product catalogue",
+        "tags": [
+          "catalogue"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "post": {
+        "summary": "Administrator creates catalogue definition",
+        "tags": [
+          "catalogue"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "summary": "Authoritative counts, attention, calendar and chart data",
+        "tags": [
+          "dashboard"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "summary": "Authorized global search; q length 2+",
+        "tags": [
+          "search"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "summary": "Current member notifications",
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/notifications/{id}/read": {
+      "post": {
+        "summary": "Mark own notification read",
+        "tags": [
+          "notifications"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/communications": {
+      "get": {
+        "summary": "Verified and manually logged communication events",
+        "tags": [
+          "communications"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      },
+      "post": {
+        "summary": "Record opened/prepared/manual-outcome event only",
+        "tags": [
+          "communications"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/reports/export": {
+      "get": {
+        "summary": "Authorized CSV export; module=clients|renewals|followups",
+        "tags": [
+          "reports"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "summary": "Administrator job failure visibility",
+        "tags": [
+          "jobs"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/jobs/{id}/retry": {
+      "post": {
+        "summary": "Retry failed durable job",
+        "tags": [
+          "jobs"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    },
+    "/members/{id}": {
+      "patch": {
+        "summary": "Change another member role; administrator only",
+        "tags": [
+          "members"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
+      }
+    }
+  }
+}

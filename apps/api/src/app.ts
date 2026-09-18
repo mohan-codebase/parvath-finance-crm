@@ -1,0 +1,168 @@
+import express from "express";
+import path from "node:path";
+import { existsSync } from "node:fs";
+import cors from "cors";
+import helmet from "helmet";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import pg from "pg";
+import pino from "pino";
+import { pinoHttp } from "pino-http";
+import { rateLimit } from "express-rate-limit";
+import { ZodError } from "zod";
+import { config } from "./config.js";
+import { db } from "./db.js";
+import { auth } from "./auth.js";
+import { clients } from "./clients.js";
+import { workflows } from "./workflows.js";
+import { reporting } from "./reporting.js";
+import { documents } from "./documents.js";
+import { HttpError, requestId, requireAuth } from "./security.js";
+export const logger = pino({
+  level: config.NODE_ENV === "test" ? "silent" : "info",
+  redact: [
+    "req.headers.cookie",
+    "req.headers.authorization",
+    "password",
+    "email",
+    "phone",
+    "body",
+  ],
+});
+export const sessionPool = new pg.Pool({
+  connectionString: config.DATABASE_URL,
+});
+export const app = express();
+app.disable("x-powered-by");
+app.set("trust proxy", config.TRUST_PROXY);
+app.set("json replacer", (_k: string, v: unknown) =>
+  typeof v === "bigint" ? v.toString() : v,
+);
+app.use(
+  requestId,
+  helmet(),
+  cors({ origin: config.APP_ORIGIN, credentials: true }),
+);
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: config.NODE_ENV !== "test",
+    serializers: {
+      req: (req) => ({
+        id: req.id,
+        method: req.method,
+        path: String(req.url).split("?")[0],
+      }),
+      res: (res) => ({ statusCode: res.statusCode }),
+    },
+  }),
+);
+app.get("/api/health", (_req, res) => res.json({ data: { status: "ok" } }));
+app.get("/api/ready", async (_req, res) => {
+  await db.$queryRaw`SELECT 1`;
+  res.json({ data: { status: "ready" } });
+});
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+app.use(
+  "/api",
+  rateLimit({
+    windowMs: 60000,
+    limit: 600,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    handler: (_req, _res, next) =>
+      next(new HttpError(429, "Too many requests. Please try again shortly.")),
+  }),
+  express.json({ limit: "2mb" }),
+);
+app.use(
+  session({
+    store: new (connectPgSimple(session))({
+      pool: sessionPool,
+      createTableIfMissing: true,
+    }),
+    name: "parvath.sid",
+    secret: config.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: config.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 8 * 60 * 60 * 1000,
+    },
+  }),
+);
+app.use("/api", (req, _res, next) => {
+  if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+    if (req.headers.origin && req.headers.origin !== config.APP_ORIGIN)
+      throw new HttpError(403, "Origin is not allowed");
+    if (!req.session.csrf || req.headers["x-csrf-token"] !== req.session.csrf)
+      throw new HttpError(403, "Security token expired. Refresh the page.");
+  }
+  next();
+});
+app.use("/api/auth", auth);
+app.get("/api/openapi.json", (_req, res) =>
+  res.sendFile(
+    existsSync(path.resolve("docs/openapi.json"))
+      ? path.resolve("docs/openapi.json")
+      : path.resolve("../../docs/openapi.json"),
+  ),
+);
+app.use("/api", requireAuth);
+app.use("/api/clients", clients);
+app.use("/api", workflows, reporting, documents);
+app.use("/api", (_req, _res) => {
+  throw new HttpError(404, "Endpoint not found");
+});
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    const status =
+      err instanceof HttpError
+        ? err.status
+        : err instanceof ZodError
+          ? 422
+          : err.code === "P2002" || err.code === "P2034"
+            ? 409
+            : err.code === "LIMIT_FILE_SIZE"
+              ? 413
+              : 500;
+    const message =
+      err instanceof ZodError
+        ? "Please correct the highlighted fields"
+        : status === 409 && !(err instanceof HttpError)
+          ? "Record conflict. Refresh and retry."
+          : status === 413
+            ? "File exceeds the 10 MB limit"
+            : status === 500
+              ? "An unexpected error occurred"
+              : err.message;
+    if (status >= 500)
+      logger.error(
+        { requestId: req.requestId, errorType: err.name, code: err.code },
+        "Request failed",
+      );
+    if (res.headersSent) return;
+    res.status(status).json({
+      error: {
+        message,
+        details:
+          err instanceof ZodError
+            ? err.flatten()
+            : err instanceof HttpError
+              ? err.details
+              : undefined,
+        requestId: req.requestId,
+      },
+    });
+  },
+);

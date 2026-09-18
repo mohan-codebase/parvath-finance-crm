@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-18T11:02:03.600Z",
+  "checks": [
+    "Sign-in and authenticated navigation",
+    "Required field validation",
+    "Draft recovery",
+    "Five-step individual creation persists",
+    "Profile editing persists",
+    "Accessible lead movement and sales conversion",
+    "Payment, renewal confirmation and recurring history",
+    "Follow-up reschedule and completion",
+    "Business onboarding and minimal route",
+    "Import preview with row-level errors"
+  ]
+}

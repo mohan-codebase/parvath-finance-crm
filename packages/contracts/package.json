@@ -1,0 +1,6 @@
+{
+  "name": "@parvath/contracts",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts"
+}

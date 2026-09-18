@@ -1,0 +1,99 @@
+name: parvath-finserv
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: parvath
+      POSTGRES_USER: parvath
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    ports: ["127.0.0.1:5433:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parvath -d parvath"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  minio:
+    image: quay.io/minio/minio:latest
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?Set S3_SECRET_KEY}
+    ports: ["127.0.0.1:9000:9000", "127.0.0.1:9001:9001"]
+    volumes: ["documents:/data"]
+    restart: unless-stopped
+  bucket-init:
+    image: quay.io/minio/mc:latest
+    depends_on: [minio]
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      [
+        "until mc alias set local http://minio:9000 $$S3_ACCESS_KEY $$S3_SECRET_KEY; do sleep 2; done; mc mb --ignore-existing local/parvath-private; mc anonymous set none local/parvath-private",
+      ]
+  clamav:
+    image: clamav/clamav:stable
+    volumes: ["clamav-data:/var/lib/clamav"]
+    restart: unless-stopped
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["127.0.0.1:8025:8025", "127.0.0.1:1025:1025"]
+  api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    profiles: [app]
+    env_file: ../.env
+    environment:
+      PORT: 4007
+      DATABASE_URL: postgresql://parvath:${POSTGRES_PASSWORD}@postgres:5432/parvath
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: parvath-private
+      CLAMAV_HOST: clamav
+      SMTP_URL: smtp://mailpit:1025
+    ports: ["127.0.0.1:4007:4007"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      bucket-init: { condition: service_completed_successfully }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:4007/api/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    profiles: [app]
+    command: ["node", "dist/apps/api/src/worker.js"]
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgresql://parvath:${POSTGRES_PASSWORD}@postgres:5432/parvath
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: parvath-private
+      CLAMAV_HOST: clamav
+    depends_on:
+      api: { condition: service_healthy }
+    restart: unless-stopped
+  web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+    profiles: [app]
+    ports: ["127.0.0.1:8080:80"]
+    depends_on: [api]
+    restart: unless-stopped
+volumes:
+  postgres-data:
+  documents:
+  clamav-data:
