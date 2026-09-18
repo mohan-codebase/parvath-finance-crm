@@ -63,7 +63,7 @@ MongoDB Job documents avoid adding Redis for this workload. Workers claim atomic
 
 ## Reference and supporting-view assumptions
 
-The PDF's leaf brand takes precedence over the separately supplied mountain logo, which remains in the workspace. The leaf and botanical stem are recovered individually; no page screenshots are used as UI. Arial is the practical font substitute. Initials replace unavailable portraits. Sample totals and dates are deliberately corrected to match actual synthetic records.
+The supplied mountain brand logo (`logo.png`) is used across the application brand headers, favicon, and greeting watermark. The botanical stem from the PDF is recovered individually; no page screenshots are used as UI. Arial is the practical font substitute. Initials replace unavailable portraits. Sample totals and dates are deliberately corrected to match actual synthetic records.
 
 Supporting screens use the same light panels, teal actions and compact typography. Reports are focused operational exports/definitions; there is no accounting or trading module. Engagement prepares messages or logs outcomes without claiming provider delivery. Product Applications are intentionally separate from sales acceptance. No automatic copying of financial products between family identities occurs.
 

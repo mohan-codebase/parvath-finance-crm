@@ -114,7 +114,7 @@ export default function Dashboard() {
             <br />
             build secure tomorrows.”
           </blockquote>
-          <img src="/assets/leaf-logo.png" alt="" />
+          <img src="/assets/logo.png" alt="" />
         </section>
         <Metrics
           items={[

@@ -24,9 +24,12 @@ import {
   Users,
   X,
   CalendarDays,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { api, useData } from "./api";
 import { Avatar, Botanical, useAuth } from "./components";
+import { ThemeToggle, useTheme } from "./theme";
 const nav = [
   ["Dashboard", "/dashboard", House],
   ["Clients", "/clients", Users],
@@ -41,7 +44,8 @@ const nav = [
 export default function Shell() {
   const user = useAuth(),
     location = useLocation(),
-    navigate = useNavigate();
+    navigate = useNavigate(),
+    { resolvedTheme, toggleTheme } = useTheme();
   const [drawer, setDrawer] = useState(false),
     [search, setSearch] = useState(""),
     [account, setAccount] = useState(false);
@@ -148,7 +152,7 @@ export default function Shell() {
         aria-label={compact && drawer ? "Navigation" : undefined}
       >
         <Link className="brand" to="/dashboard">
-          <img src="/assets/leaf-logo.png" alt="" />
+          <img src="/assets/logo.png" alt="" />
           <span>
             <strong>Parvath FinServ</strong>
             <small>Your Financial Partner</small>
@@ -240,6 +244,7 @@ export default function Shell() {
                 <span>{primary[0]}</span>
               </Link>
             )}
+            <ThemeToggle />
             <Link
               className="notification-button"
               to="/notifications"
@@ -266,6 +271,21 @@ export default function Shell() {
               {account && (
                 <div className="account-menu">
                   <p>{user.role}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleTheme();
+                    }}
+                  >
+                    {resolvedTheme === "dark" ? (
+                      <Sun size={16} />
+                    ) : (
+                      <Moon size={16} />
+                    )}
+                    {resolvedTheme === "dark"
+                      ? "Light appearance"
+                      : "Dark appearance"}
+                  </button>
                   <Link to="/settings">
                     <Settings size={16} />
                     Account settings

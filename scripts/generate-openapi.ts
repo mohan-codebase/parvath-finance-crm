@@ -142,6 +142,11 @@ for (const [path, method, summary] of [
     "post",
     "Import reviewed valid rows idempotently",
   ],
+  [
+    "/clients/{id}",
+    "delete",
+    "Delete client and cascade related records; adviser or admin only",
+  ],
   ["/clients/bulk", "post", "Change selected client status"],
   ["/clients/{id}/relationships", "post", "Link existing contact identity"],
   ["/clients/{id}/notes", "post", "Record client note"],

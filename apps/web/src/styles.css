@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./dark.css";
 @theme {
   --color-brand: #087e79;
   --color-ink: #111936;
@@ -81,6 +82,17 @@ button.primary,
 button.primary:hover,
 .button.primary:hover {
   background: #076c69;
+}
+button.danger,
+.button.danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+button.danger:hover,
+.button.danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
 }
 button:focus-visible,
 a:focus-visible,
@@ -322,31 +334,34 @@ tbody tr:hover {
 }
 .brand {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  height: 44px;
+  text-align: center;
+  height: auto;
+  gap: 6px;
+  padding: 4px 0 6px;
   white-space: nowrap;
 }
 .brand img {
-  width: 34px;
-  height: 45px;
+  width: 124px;
+  height: 93px;
   object-fit: contain;
-  mix-blend-mode: multiply;
 }
 .brand strong {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.5px;
+  display: block;
 }
 .brand small {
   display: block;
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: 11px;
 }
 .sidebar nav {
   display: grid;
   gap: 7px;
-  margin-top: 25px;
+  margin-top: 18px;
 }
 .sidebar nav a {
   height: 44px;
@@ -974,12 +989,12 @@ tbody tr:hover {
 }
 .greeting > img {
   position: absolute;
-  right: 6px;
+  right: 8px;
   bottom: -10px;
-  width: 58px;
-  height: 84px;
-  opacity: 0.2;
-  mix-blend-mode: multiply;
+  width: 100px;
+  height: 75px;
+  object-fit: contain;
+  opacity: 0.18;
 }
 .dashboard-main > .metrics {
   gap: 13px;
@@ -2284,6 +2299,7 @@ tbody tr:hover {
   grid-template-columns: 1.3fr 1fr;
   gap: 18px;
   margin-bottom: 18px;
+  align-items: start;
 }
 .detail-layout > .panel + .panel {
   margin-top: 0;
@@ -2351,6 +2367,54 @@ tbody tr:hover {
   border-radius: 8px;
   color: #203a44;
 }
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+@media (max-width: 900px) {
+  .export-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.export-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfdfe;
+}
+.export-card .export-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.export-card .export-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.export-card strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.export-card small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
 .definitions {
   display: grid;
   grid-template-columns: 230px 1fr;
@@ -2367,11 +2431,17 @@ tbody tr:hover {
 }
 .inline-form {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   gap: 15px;
 }
 .inline-form > label {
   flex: 1;
+  margin-bottom: 0;
+}
+.inline-form button,
+.inline-form .button {
+  height: 40px;
+  white-space: nowrap;
 }
 .notification-row {
   width: 100%;
@@ -2523,10 +2593,28 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
 }
+.auth-brand .brand {
+  align-items: flex-start;
+  text-align: left;
+  padding: 0;
+  gap: 10px;
+}
+.auth-brand .brand img {
+  width: 180px;
+  height: 135px;
+}
+.auth-brand .brand strong {
+  font-size: 24px;
+  letter-spacing: -0.4px;
+}
+.auth-brand .brand small {
+  font-size: 14px;
+  margin-top: 3px;
+}
 .auth-brand h1 {
   font-size: 40px;
   line-height: 1.3;
-  margin-top: 90px;
+  margin-top: 60px;
   color: #134b4c;
 }
 .auth-brand > p {
@@ -2545,7 +2633,7 @@ tbody tr:hover {
 }
 .auth-brand .botanical p {
   font-size: 27px;
-  width: 160px;
+  width: 125px;
 }
 .auth-card {
   max-width: 430px;

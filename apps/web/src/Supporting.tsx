@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Bell, Mail, Plus, ShieldCheck } from "lucide-react";
+import {
+  Bell,
+  CalendarDays,
+  CheckSquare,
+  Laptop,
+  Mail,
+  Moon,
+  Plus,
+  ShieldCheck,
+  Sun,
+  Users,
+} from "lucide-react";
 import { date, query, rupees, useData, useWrite } from "./api";
 import {
   Avatar,
@@ -20,6 +31,7 @@ import {
   useAuth,
   useToast,
 } from "./components";
+import { useTheme } from "./theme";
 export function Products() {
   const [params, setParams] = useSearchParams(),
     q = useData("/products?" + params.toString());
@@ -369,13 +381,46 @@ export function Reports() {
           exported in exact integer paise. Formula-like cells are escaped for
           spreadsheet safety.
         </p>
-        <div className="flex gap-4 flex-wrap">
-          {["clients", "renewals", "followups"].map((m) => (
-            <div key={m}>
-              <h3 className="capitalize">{m}</h3>
-              <ExportButton module={m} />
-            </div>
-          ))}
+        <div className="export-grid">
+          {[
+            {
+              id: "clients",
+              title: "Clients",
+              description: "Client profiles, contacts & KYC status",
+              icon: Users,
+              color: "mint",
+            },
+            {
+              id: "renewals",
+              title: "Renewals",
+              description: "Schedules, policies & premium amounts",
+              icon: CalendarDays,
+              color: "amber",
+            },
+            {
+              id: "followups",
+              title: "Follow-ups",
+              description: "Task schedules, channels & outcomes",
+              icon: CheckSquare,
+              color: "blue",
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div className="export-card" key={item.id}>
+                <div className="export-info">
+                  <span className={`export-icon ${item.color}`}>
+                    <Icon size={18} />
+                  </span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    <small>{item.description}</small>
+                  </div>
+                </div>
+                <ExportButton module={item.id} />
+              </div>
+            );
+          })}
         </div>
       </Panel>
       <Panel title="Metric Definitions">
@@ -466,6 +511,7 @@ export function Settings() {
   const user = useAuth(),
     write = useWrite(),
     toast = useToast(),
+    { theme, resolvedTheme, setTheme } = useTheme(),
     jobs = useData("/jobs", user.role === "Administrator"),
     members = useData("/members"),
     catalogue = useData("/catalogue");
@@ -525,6 +571,41 @@ export function Settings() {
           </form>
         </Panel>
         <div>
+          <Panel title="Appearance">
+            <p className="muted" style={{ marginBottom: 12 }}>
+              Choose your preferred visual theme for the CRM.
+            </p>
+            <div className="segmented">
+              <button
+                type="button"
+                className={theme === "light" ? "primary" : ""}
+                onClick={() => setTheme("light")}
+              >
+                <Sun size={15} /> Light
+              </button>
+              <button
+                type="button"
+                className={theme === "system" ? "primary" : ""}
+                onClick={() => setTheme("system")}
+              >
+                <Laptop size={15} /> System
+              </button>
+              <button
+                type="button"
+                className={theme === "dark" ? "primary" : ""}
+                onClick={() => setTheme("dark")}
+              >
+                <Moon size={15} /> Dark
+              </button>
+            </div>
+            <p className="muted" style={{ marginTop: 10, fontSize: 11 }}>
+              {theme === "system"
+                ? `System mode is currently resolving to ${resolvedTheme === "dark" ? "Dark" : "Light"} based on browser preference. Click "Dark" to enable Dark mode directly.`
+                : theme === "dark"
+                  ? "Dark mode active."
+                  : "Light mode active."}
+            </p>
+          </Panel>
           <Panel title="Workspace">
             <dl className="info-list">
               <div>

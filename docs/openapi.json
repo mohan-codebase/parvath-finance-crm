@@ -850,6 +850,72 @@
             "description": "External integration not configured"
           }
         }
+      },
+      "delete": {
+        "summary": "Delete client and cascade related records; adviser or admin only",
+        "tags": [
+          "clients"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success; JSON {data, meta?}"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Sign-in required"
+          },
+          "403": {
+            "description": "Role or CSRF denied"
+          },
+          "404": {
+            "description": "Record absent or outside workspace"
+          },
+          "409": {
+            "description": "Duplicate, stale version or invalid transition"
+          },
+          "422": {
+            "description": "Zod validation error with fieldErrors"
+          },
+          "503": {
+            "description": "External integration not configured"
+          }
+        }
       }
     },
     "/leads": {

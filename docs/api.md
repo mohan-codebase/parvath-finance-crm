@@ -17,7 +17,7 @@ Forgot password accepts `{email}` and requires configured SMTP. Reset accepts `{
 
 Create/update fields are described in the shared Client schema. PATCH requires `version`. Missing optional data is not guessed. Duplicate phone/email returns 409 with authorized candidates; distinct reviewed identities require `allowDuplicate:true` and `duplicateReason`. Unchanged shared contact details do not repeatedly prompt during edits.
 
-Client links and details: `/clients/{id}`, `/clients/{id}/relationships` (`{clientId,type}`), `/clients/{id}/notes` (`{body}`), `/clients/{id}/consents` (`{channel,granted,source}`). Bulk status changes require `{ids,status}` and edit permission.
+Client links and details: `/clients/{id}`, `/clients/{id}/relationships` (`{clientId,type}`), `/clients/{id}/notes` (`{body}`), `/clients/{id}/consents` (`{channel,granted,source}`). Bulk status changes require `{ids,status}` and edit permission. `DELETE /clients/{id}` deletes the client and cascades related contacts, notes, documents, and records (requires edit/admin permission).
 
 CSV template: `/clients/template`. Preview POST `/clients/import/preview` with `{csv}`. The response includes import id and `{row,data,error}` entries. Commit POST `/clients/import/{id}/commit`; valid nonduplicates are inserted transactionally, invalid/duplicate rows are reported, and repeat commits return the stored result. No overwrite mode exists.
 

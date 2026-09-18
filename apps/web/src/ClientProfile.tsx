@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Mail,
   MapPin,
@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Plus,
   Lightbulb,
+  Trash2,
 } from "lucide-react";
 import { date, rupees, useData, useWrite } from "./api";
 import {
@@ -37,13 +38,16 @@ export default function ClientProfile() {
   const user = useAuth(),
     { id } = useParams(),
     loc = useLocation(),
+    navigate = useNavigate(),
     toast = useToast(),
     q = useData("/clients/" + id),
     write = useWrite();
   const [tab, setTab] = useState("Overview"),
     [note, setNote] = useState(""),
     [relationship, setRelationship] = useState(false),
-    [health, setHealth] = useState(false);
+    [health, setHealth] = useState(false),
+    [showDelete, setShowDelete] = useState(false);
+  const canDelete = user.role === "Administrator" || user.role === "Adviser";
   const file = useRef<HTMLInputElement>(null);
   if (q.isPending) return <Loading />;
   if (q.error) return <ErrorState error={q.error} />;
@@ -199,6 +203,17 @@ export default function ClientProfile() {
                 Email
               </Link>
               {edit}
+              {canDelete && (
+                <button
+                  type="button"
+                  className="button danger small"
+                  onClick={() => setShowDelete(true)}
+                  title="Delete client"
+                >
+                  <Trash2 size={13} />
+                  Delete
+                </button>
+              )}
             </div>
             <p>
               <span>
@@ -560,6 +575,51 @@ export default function ClientProfile() {
               </div>
             ))}
           </dl>
+        </Modal>
+      )}
+      {showDelete && (
+        <Modal title="Delete Client" onClose={() => setShowDelete(false)}>
+          <p style={{ margin: "0 0 14px" }}>
+            Are you sure you want to permanently delete <strong>{c.name}</strong>?
+          </p>
+          <p
+            className="muted"
+            style={{ margin: "0 0 20px", fontSize: 13, lineHeight: 1.5 }}
+          >
+            This will permanently remove this client profile, contact details,
+            notes, documents, and associated activity. This action cannot be
+            undone.
+          </p>
+          <FormError error={write.error} />
+          <div className="modal-actions">
+            <button
+              type="button"
+              onClick={() => setShowDelete(false)}
+              disabled={write.isPending}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="danger"
+              disabled={write.isPending}
+              onClick={async () => {
+                try {
+                  await write.mutateAsync({
+                    path: `/clients/${id}`,
+                    method: "DELETE",
+                  });
+                  toast("Client deleted successfully");
+                  setShowDelete(false);
+                  navigate("/clients");
+                } catch {
+                  /* FormError displays error */
+                }
+              }}
+            >
+              {write.isPending ? "Deleting..." : "Confirm Delete"}
+            </button>
+          </div>
         </Modal>
       )}
     </>

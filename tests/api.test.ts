@@ -256,6 +256,29 @@ describe("Authenticated MongoDB workflows", () => {
       403,
     );
     expect((await ops.get("/api/clients")).status).toBe(200);
+    expect(
+      (
+        await ops
+          .delete("/api/clients/" + client.id)
+          .set("X-CSRF-Token", opsToken)
+      ).status,
+    ).toBe(403);
+  });
+  it("deletes a client and cascades related records", async () => {
+    const created = await write("/clients", {
+      name: "Temporary Client",
+      phone: "+919000088899",
+      email: "temp@example.test",
+    });
+    expect(created.status).toBe(201);
+    const tempId = created.body.data.id;
+    await write(`/clients/${tempId}/notes`, { body: "Note before delete" });
+
+    const del = await write(`/clients/${tempId}`, {}, "delete");
+    expect(del.status).toBe(200);
+    expect(del.body.data.success).toBe(true);
+
+    expect((await admin.get(`/api/clients/${tempId}`)).status).toBe(404);
   });
   it("validates pagination and supports server search", async () => {
     expect((await admin.get("/api/clients?limit=1000")).status).toBe(422);

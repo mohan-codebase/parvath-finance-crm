@@ -1,0 +1,992 @@
+/* Parvath FinServ CRM - Dark Mode Theme */
+
+/* Base theme tokens and surface colors */
+html.dark,
+html.dark body,
+[data-theme="dark"],
+.dark {
+  color-scheme: dark;
+  background: #0c131f;
+  color: #e2e8f0;
+  --color-page: #0c131f;
+  --color-ink: #e2e8f0;
+  --color-muted: #8b9cb3;
+  --border: #1e2a3c;
+  --muted: #8b9cb3;
+}
+
+/* Base typography in dark mode */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark strong {
+  color: #f1f5f9;
+}
+
+html.dark p {
+  color: #94a3b8;
+}
+
+html.dark small,
+html.dark .muted {
+  color: #8b9cb3;
+}
+
+html.dark a {
+  color: inherit;
+}
+
+html.dark .text-link {
+  color: #2dd4bf;
+}
+
+html.dark .text-link:hover {
+  color: #5eead4;
+}
+
+html.dark .back-link {
+  color: #8b9cb3;
+}
+
+html.dark .back-link:hover {
+  color: #f1f5f9;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  border: 1px solid #dce4e8;
+  background: #fff;
+  border-radius: 6px;
+  color: #3b4d67;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  width: 38px;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.theme-toggle:hover {
+  background: #f0f7f7;
+  border-color: #b6d3d0;
+  color: #087e79;
+}
+
+html.dark .theme-toggle {
+  background: #141f30;
+  border-color: #283952;
+  color: #fcd34d;
+}
+
+html.dark .theme-toggle:hover {
+  background: #1c2a40;
+  border-color: #384f70;
+  color: #fef08a;
+}
+
+.auth-theme-corner {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 50;
+}
+
+/* Buttons */
+html.dark button,
+html.dark .button {
+  background: #141f30;
+  border: 1px solid #283952;
+  color: #e2e8f0;
+}
+
+html.dark button:hover,
+html.dark .button:hover {
+  background: #1c2a40;
+  border-color: #384f70;
+  color: #ffffff;
+}
+
+html.dark button.primary,
+html.dark .button.primary {
+  background: #0d8b85;
+  border-color: #0d8b85;
+  color: #ffffff;
+}
+
+html.dark button.primary:hover,
+html.dark .button.primary:hover {
+  background: #0fa39c;
+  border-color: #0fa39c;
+}
+
+html.dark .whatsapp-button {
+  background: #103325;
+  border-color: #1a573f;
+  color: #4ade80;
+}
+
+html.dark .whatsapp-button:hover {
+  background: #154532;
+  border-color: #247554;
+  color: #86efac;
+}
+
+/* Form Controls & Inputs */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark select,
+html.dark textarea {
+  background: #131d2c;
+  border: 1px solid #283952;
+  color: #f1f5f9;
+}
+
+html.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #0d8b85;
+  outline: 3px solid #0d8b8544;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark input:disabled,
+html.dark select:disabled {
+  background: #0e1622;
+  color: #64748b;
+  opacity: 0.7;
+}
+
+html.dark label {
+  color: #cbd5e1;
+}
+
+html.dark .search-input {
+  background: #131d2c;
+  border: 1px solid #283952;
+  color: #cbd5e1;
+}
+
+html.dark .search-input input:not([type]) {
+  color: #f1f5f9;
+}
+
+html.dark .global-search {
+  background: #131d2c;
+  border: 1px solid #283952;
+  color: #cbd5e1;
+}
+
+html.dark .global-search input {
+  color: #f1f5f9;
+}
+
+html.dark .search-results {
+  background: #111a28;
+  border: 1px solid #283952;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+html.dark .search-results a {
+  color: #e2e8f0;
+}
+
+html.dark .search-results a:hover {
+  background: #1c2a40;
+}
+
+/* Sidebar & Navigation */
+html.dark .sidebar {
+  background: #080d15;
+  border-right: 1px solid #1a2434;
+}
+
+html.dark .brand strong {
+  color: #f1f5f9;
+}
+
+html.dark .brand small {
+  color: #8b9cb3;
+}
+
+html.dark .brand img {
+  mix-blend-mode: normal;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5)) brightness(1.2);
+}
+
+html.dark .sidebar nav a {
+  color: #94a3b8;
+}
+
+html.dark .sidebar nav a:hover {
+  background: #131e2e;
+  color: #f1f5f9;
+}
+
+html.dark .sidebar nav a.active {
+  background: #0d8b85;
+  color: #ffffff;
+}
+
+html.dark .botanical {
+  background: #0c2024;
+  border: 1px solid #153c44;
+}
+
+html.dark .botanical p {
+  color: #a7f3d0;
+}
+
+html.dark .botanical i {
+  background: #14b8a6;
+}
+
+html.dark .botanical img {
+  mix-blend-mode: normal;
+  opacity: 0.75;
+}
+
+html.dark .sidebar-footer {
+  background: #0a171d;
+  border-top: 1px solid #142a35;
+}
+
+html.dark .sidebar-footer strong {
+  color: #5eead4;
+}
+
+html.dark .sidebar-footer small {
+  color: #8b9cb3;
+}
+
+/* Topbar & Account */
+html.dark .topbar {
+  background: #0c1421;
+  border-bottom: 1px solid #1a2434;
+}
+
+html.dark .account > button {
+  color: #f1f5f9;
+}
+
+html.dark .account-menu {
+  background: #111a28;
+  border: 1px solid #283952;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+html.dark .account-menu p {
+  color: #8b9cb3;
+  border-bottom: 1px solid #202d40;
+}
+
+html.dark .account-menu a,
+html.dark .account-menu button {
+  color: #cbd5e1;
+}
+
+html.dark .account-menu a:hover,
+html.dark .account-menu button:hover {
+  background: #1c2a40;
+  color: #ffffff;
+}
+
+html.dark .notification-button {
+  color: #94a3b8;
+}
+
+html.dark .notification-button:hover {
+  color: #f1f5f9;
+}
+
+/* Panels & Cards */
+html.dark .panel {
+  background: #111a28;
+  border: 1px solid #1e2c40;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .panel-heading h2 {
+  color: #f1f5f9;
+}
+
+html.dark .panel-heading p {
+  color: #8b9cb3;
+}
+
+html.dark .export-card {
+  background: #141f30;
+  border-color: #203046;
+}
+
+html.dark .export-card strong {
+  color: #f1f5f9;
+}
+
+html.dark .export-card small {
+  color: #8b9cb3;
+}
+
+html.dark .metric {
+  background: #141f30;
+  border: 1px solid #203046;
+}
+
+html.dark .metric strong {
+  color: #f1f5f9;
+}
+
+html.dark .metric small {
+  color: #8b9cb3;
+}
+
+html.dark .metric-icon {
+  background: #19273d;
+}
+
+html.dark .metric.mint {
+  background: #06231c;
+  border-color: #0c4a3c;
+}
+
+html.dark .metric.rose {
+  background: #2b0912;
+  border-color: #591626;
+}
+
+html.dark .metric.lavender {
+  background: #1c0e33;
+  border-color: #3e1e72;
+}
+
+html.dark .metric.blue {
+  background: #0c1d37;
+  border-color: #193e74;
+}
+
+html.dark .metric.amber {
+  background: #271904;
+  border-color: #553609;
+}
+
+/* Badges / Chips / Tones in Dark Mode */
+html.dark .mint {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
+html.dark .rose {
+  background: #4c0519;
+  color: #fda4af;
+}
+
+html.dark .lavender {
+  background: #2e1065;
+  color: #d8b4fe;
+}
+
+html.dark .blue {
+  background: #1e3a8a;
+  color: #93c5fd;
+}
+
+html.dark .amber {
+  background: #451a03;
+  color: #fcd34d;
+}
+
+html.dark .sky {
+  background: #083344;
+  color: #7dd3fc;
+}
+
+html.dark .neutral {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+/* Tables & Pagination */
+html.dark table {
+  color: #cbd5e1;
+}
+
+html.dark thead {
+  background: #141f30;
+}
+
+html.dark th {
+  color: #94a3b8;
+  border-bottom: 1px solid #203046;
+}
+
+html.dark td {
+  border-bottom: 1px solid #1a273a;
+  color: #cbd5e1;
+}
+
+html.dark tbody tr:hover {
+  background: #17243780;
+}
+
+html.dark .person-cell strong {
+  color: #f1f5f9;
+}
+
+html.dark .person-cell small {
+  color: #8b9cb3;
+}
+
+html.dark .table-sort {
+  color: #94a3b8;
+}
+
+html.dark .table-sort:hover {
+  color: #f1f5f9;
+}
+
+html.dark .contact-actions button,
+html.dark .contact-actions a {
+  background: #141f30;
+  border: 1px solid #283952;
+  color: #cbd5e1;
+}
+
+html.dark .contact-actions button:hover,
+html.dark .contact-actions a:hover {
+  background: #1c2a40;
+  color: #ffffff;
+}
+
+html.dark .pagination {
+  color: #8b9cb3;
+}
+
+html.dark .pagination button {
+  background: #141f30;
+  border-color: #283952;
+  color: #cbd5e1;
+}
+
+html.dark .pagination button.primary {
+  background: #0d8b85;
+  color: #ffffff;
+}
+
+html.dark .selection-bar {
+  background: #06392b;
+  color: #6ee7b7;
+}
+
+/* Dashboard Elements */
+html.dark .greeting {
+  background: #241a05;
+  border: 1px solid #4a350c;
+}
+
+html.dark .greeting h1 {
+  color: #fef3c7;
+}
+
+html.dark .greeting p {
+  color: #fde68a;
+}
+
+html.dark .greeting blockquote {
+  color: #cbd5e1;
+}
+
+html.dark .greeting > img {
+  filter: invert(1);
+  opacity: 0.12;
+}
+
+html.dark .relationship-banner {
+  background: #062824;
+  border: 1px solid #0f524a;
+  color: #5eead4;
+}
+
+html.dark .relationship-banner strong {
+  color: #f0fdfa;
+}
+
+html.dark .relationship-banner p {
+  color: #99f6e4;
+}
+
+html.dark .attention-row {
+  border-bottom: 1px solid #1a273a;
+}
+
+html.dark .attention-person strong {
+  color: #f1f5f9;
+}
+
+html.dark .attention-person > span {
+  color: #8b9cb3;
+}
+
+html.dark .attention-amount strong {
+  color: #f1f5f9;
+}
+
+html.dark .day-summary {
+  border-top: 1px solid #1a273a;
+}
+
+html.dark .day-summary h3 {
+  color: #f1f5f9;
+}
+
+html.dark .schedule-row {
+  border-bottom: 1px solid #1a273a;
+}
+
+html.dark .schedule-row strong {
+  color: #f1f5f9;
+}
+
+html.dark .schedule-row small {
+  color: #8b9cb3;
+}
+
+html.dark .tip {
+  background: #0b2229;
+  border: 1px solid #143e4b;
+  color: #fcd34d;
+}
+
+html.dark .tip strong {
+  color: #f1f5f9;
+}
+
+html.dark .tip a {
+  color: #2dd4bf;
+}
+
+/* Tabs & Filters */
+html.dark .tabs {
+  border-bottom: 1px solid #1e2c40;
+}
+
+html.dark .tabs button {
+  color: #8b9cb3;
+}
+
+html.dark .tabs button.selected {
+  color: #2dd4bf;
+}
+
+html.dark .tabs button.selected:after {
+  background: #0d8b85;
+}
+
+html.dark .filter-details {
+  background: #0e1724;
+  border: 1px solid #1e2c40;
+}
+
+html.dark .attention-panel .tabs button {
+  background: #141f30;
+  color: #8b9cb3;
+}
+
+html.dark .attention-panel .tabs button.selected {
+  background: #0d8b85;
+  color: #ffffff;
+}
+
+html.dark .profile-top .tabs {
+  background: #141f30;
+}
+
+html.dark .segmented button {
+  background: #141f30;
+  border-color: #283952;
+  color: #cbd5e1;
+}
+
+html.dark .segmented button.primary {
+  background: #0d8b85;
+  border-color: #0d8b85;
+  color: #ffffff;
+}
+
+/* Calendar */
+html.dark .calendar-header button {
+  color: #cbd5e1;
+}
+
+html.dark .calendar-header button:hover {
+  color: #ffffff;
+}
+
+html.dark .calendar-grid button {
+  color: #cbd5e1;
+}
+
+html.dark .calendar-grid button:hover {
+  background: #1c2a40;
+  color: #ffffff;
+}
+
+html.dark .calendar-grid button.active {
+  background: #0d8b85;
+  color: #ffffff;
+}
+
+html.dark .calendar-legend {
+  color: #8b9cb3;
+}
+
+/* Quick Actions & Grids */
+html.dark .quick-icon {
+  background: #141f30;
+  border: 1px solid #203046;
+}
+
+html.dark .quick-grid.two > a {
+  border: 1px solid #203046;
+  background: #141f30;
+}
+
+/* Leads Kanban Board */
+html.dark .lead-column {
+  background: #0d1522;
+  border: 1px solid #1c2a3e;
+}
+
+html.dark .lead-column h2 {
+  color: #f1f5f9;
+}
+
+html.dark .lead-column h2 b {
+  background: #1c2a3e;
+  color: #f1f5f9;
+}
+
+html.dark .lead-column header p {
+  color: #8b9cb3;
+}
+
+html.dark .lead-card {
+  background: #141f30;
+  border: 1px solid #203046;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .lead-card strong {
+  color: #f1f5f9;
+}
+
+html.dark .lead-card small,
+html.dark .lead-card p {
+  color: #8b9cb3;
+}
+
+html.dark .lead-tags > span:last-child {
+  background: #0d1522;
+  color: #8b9cb3;
+}
+
+html.dark .drag-handle {
+  color: #8b9cb3;
+}
+
+html.dark .stage-1 {
+  background: #1e1505;
+  border-color: #422d0b;
+}
+
+html.dark .stage-1 h2 b {
+  background: #422d0b;
+}
+
+html.dark .stage-2 {
+  background: #170d2b;
+  border-color: #351d62;
+}
+
+html.dark .stage-2 h2 b {
+  background: #351d62;
+}
+
+html.dark .stage-3 {
+  background: #061e1f;
+  border-color: #0e4042;
+}
+
+html.dark .stage-3 h2 b {
+  background: #0e4042;
+}
+
+html.dark .stage-4 {
+  background: #061f10;
+  border-color: #0f4422;
+}
+
+html.dark .stage-4 h2 b {
+  background: #0f4422;
+}
+
+html.dark .stage-5 {
+  background: #23080e;
+  border-color: #4f1220;
+}
+
+html.dark .stage-5 h2 b {
+  background: #4f1220;
+}
+
+/* Client Profile & Details */
+html.dark .profile-header-actions strong {
+  color: #f1f5f9;
+}
+
+html.dark .profile-header-actions > p {
+  color: #8b9cb3;
+}
+
+html.dark .profile-header-actions > p > span {
+  border-left: 1px solid #1e2c40;
+}
+
+html.dark .info-list dt {
+  color: #8b9cb3;
+}
+
+html.dark .info-list dd {
+  color: #f1f5f9;
+}
+
+html.dark .opportunities-panel {
+  background: #1f1707;
+  border: 1px solid #45320c;
+}
+
+html.dark .profile-product {
+  border-bottom: 1px solid #1a273a;
+}
+
+html.dark .profile-product strong {
+  color: #f1f5f9;
+}
+
+html.dark .profile-product small {
+  color: #8b9cb3;
+}
+
+html.dark .document-row {
+  border-bottom: 1px solid #1a273a;
+}
+
+html.dark .document-row strong {
+  color: #f1f5f9;
+}
+
+html.dark .document-row small {
+  color: #8b9cb3;
+}
+
+html.dark .record-row {
+  border-bottom: 1px solid #1a273a;
+}
+
+html.dark .record-row strong {
+  color: #f1f5f9;
+}
+
+html.dark .record-row small {
+  color: #8b9cb3;
+}
+
+/* Onboarding & Forms */
+html.dark .stepper {
+  background: #111a28;
+  border: 1px solid #1e2c40;
+}
+
+html.dark .stepper > button {
+  color: #8b9cb3;
+}
+
+html.dark .stepper > button:after {
+  background: #203046;
+}
+
+html.dark .stepper > button > span {
+  background: #19273d;
+  color: #cbd5e1;
+}
+
+html.dark .stepper > button.current {
+  color: #f1f5f9;
+}
+
+html.dark .stepper > button.current > span,
+html.dark .stepper > button.done > span {
+  background: #0d8b85;
+  color: #ffffff;
+}
+
+html.dark .quick-add-row {
+  background: #141f30;
+  border: 1px solid #203046;
+  color: #f1f5f9;
+}
+
+html.dark .quick-add-row:hover {
+  background: #1c2a40;
+}
+
+html.dark .form-footer {
+  border-top: 1px solid #1e2c40;
+}
+
+html.dark .review-grid > div {
+  border-bottom: 1px solid #1e2c40;
+}
+
+html.dark .review-grid span {
+  color: #8b9cb3;
+}
+
+html.dark .review-grid strong {
+  color: #f1f5f9;
+}
+
+html.dark .photo-panel {
+  background: #0f1826;
+}
+
+html.dark .photo-placeholder {
+  background: #19273d;
+  color: #64748b;
+}
+
+html.dark .security-note {
+  background: #072824;
+  border: 1px solid #0f524a;
+}
+
+html.dark .security-note strong {
+  color: #5eead4;
+}
+
+html.dark .security-note p {
+  color: #cbd5e1;
+}
+
+html.dark .draft-notice {
+  background: #06392b;
+  color: #6ee7b7;
+}
+
+html.dark .duplicate-warning {
+  background: #261905;
+  border: 1px solid #55370a;
+  color: #fcd34d;
+}
+
+html.dark .upload-zone {
+  background: #072824;
+  border: 1px dashed #14b8a6;
+  color: #5eead4;
+}
+
+html.dark .notification-row.unread {
+  background: #092822;
+}
+
+html.dark .large-note {
+  background: #101c29;
+  color: #cbd5e1;
+}
+
+html.dark .definitions dd {
+  color: #8b9cb3;
+}
+
+/* Modals & Dialogs */
+html.dark .modal {
+  background: #111a28;
+  border: 1px solid #203046;
+  color: #f1f5f9;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8);
+}
+
+html.dark .modal::backdrop {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+html.dark .toast {
+  background: #0b3d39;
+  border: 1px solid #115e57;
+  color: #f0fdfa;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Authentication Screens */
+html.dark .auth-page {
+  background: #080d15;
+}
+
+html.dark .auth-brand {
+  background: #081a1f;
+  border-right: 1px solid #12343c;
+}
+
+html.dark .auth-brand h1 {
+  color: #5eead4;
+}
+
+html.dark .auth-brand > p {
+  color: #cbd5e1;
+}
+
+html.dark .auth-card {
+  background: #111a28;
+  border: 1px solid #1e2c40;
+  border-radius: 12px;
+}
+
+html.dark .auth-card h1 {
+  color: #f1f5f9;
+}
+
+html.dark .auth-card > p {
+  color: #8b9cb3;
+}
+
+/* Recharts in Dark Mode */
+html.dark .recharts-default-tooltip {
+  background: #111a28 !important;
+  border: 1px solid #283952 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .recharts-tooltip-label {
+  color: #f1f5f9 !important;
+}
+
+html.dark .recharts-tooltip-item {
+  color: #cbd5e1 !important;
+}
+
+html.dark .recharts-cartesian-grid-horizontal line,
+html.dark .recharts-cartesian-grid-vertical line {
+  stroke: #1e2c40 !important;
+}
+
+html.dark .recharts-text {
+  fill: #8b9cb3 !important;
+}

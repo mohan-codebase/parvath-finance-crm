@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Filter, Upload, ArrowUpDown } from "lucide-react";
+import { Filter, Upload, ArrowUpDown, Trash2 } from "lucide-react";
 import { date, useData, useWrite } from "./api";
 import {
   Avatar,
@@ -19,14 +19,18 @@ import {
   Tabs,
   FormError,
   useAuth,
+  useToast,
 } from "./components";
 export default function Clients() {
   const [params, setParams] = useSearchParams(),
     location = useLocation(),
-    user = useAuth();
+    user = useAuth(),
+    toast = useToast();
   const [selected, setSelected] = useState<string[]>([]),
     [bulk, setBulk] = useState(false),
-    [more, setMore] = useState(false);
+    [more, setMore] = useState(false),
+    [clientToDelete, setClientToDelete] = useState<any>(null);
+  const canDelete = user.role === "Administrator" || user.role === "Adviser";
   const write = useWrite();
   useEffect(() => {
     sessionStorage.setItem(
@@ -184,11 +188,20 @@ export default function Clients() {
             <option value="">All Locations</option>
             {[
               "Chennai",
-              "Bengaluru",
               "Coimbatore",
               "Madurai",
-              "Kochi",
-              "Hyderabad",
+              "Tiruchirappalli",
+              "Salem",
+              "Tirunelveli",
+              "Erode",
+              "Tiruppur",
+              "Kanchipuram",
+              "Vellore",
+              "Thanjavur",
+              "Karur",
+              "Dindigul",
+              "Nagercoil",
+              "Karaikudi",
             ].map((c) => (
               <option key={c}>{c}</option>
             ))}
@@ -342,11 +355,31 @@ export default function Clients() {
                           <Badge>{c.status}</Badge>
                         </td>
                         <td>
-                          <ContactActions
-                            client={c}
-                            compact
-                            detail={"/clients/" + c.id}
-                          />
+                          <div
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <ContactActions
+                              client={c}
+                              compact
+                              detail={"/clients/" + c.id}
+                            />
+                            {canDelete && (
+                              <button
+                                type="button"
+                                className="icon-button"
+                                title={`Delete ${c.name}`}
+                                aria-label={`Delete ${c.name}`}
+                                onClick={() => setClientToDelete(c)}
+                                style={{ color: "#dc2626" }}
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -390,6 +423,54 @@ export default function Clients() {
                 {s}
               </button>
             ))}
+          </div>
+        </Modal>
+      )}
+      {clientToDelete && (
+        <Modal
+          title="Delete Client"
+          onClose={() => setClientToDelete(null)}
+        >
+          <p style={{ margin: "0 0 14px" }}>
+            Are you sure you want to permanently delete{" "}
+            <strong>{clientToDelete.name}</strong>?
+          </p>
+          <p
+            className="muted"
+            style={{ margin: "0 0 20px", fontSize: 13, lineHeight: 1.5 }}
+          >
+            This will permanently remove this client profile, contact details,
+            notes, documents, and associated activity. This action cannot be
+            undone.
+          </p>
+          <FormError error={write.error} />
+          <div className="modal-actions">
+            <button
+              type="button"
+              onClick={() => setClientToDelete(null)}
+              disabled={write.isPending}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="danger"
+              disabled={write.isPending}
+              onClick={async () => {
+                try {
+                  await write.mutateAsync({
+                    path: `/clients/${clientToDelete.id}`,
+                    method: "DELETE",
+                  });
+                  toast("Client deleted successfully");
+                  setClientToDelete(null);
+                } catch {
+                  /* FormError displays error */
+                }
+              }}
+            >
+              {write.isPending ? "Deleting..." : "Confirm Delete"}
+            </button>
           </div>
         </Modal>
       )}

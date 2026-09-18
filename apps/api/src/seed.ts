@@ -11,63 +11,201 @@ const m = await db.membership.findFirst({
 if (!m) throw new Error("Create an administrator first: npm run admin:create");
 const org = m.organizationId,
   owner = m.userId;
+const forceReset =
+  process.argv.includes("--reset") || process.argv.includes("--force");
 if (await db.client.count({ where: { organizationId: org } })) {
-  console.log("Workspace has records; seed skipped to protect existing data.");
-  await db.close();
-  process.exit(0);
+  if (forceReset) {
+    console.log("Reset flag detected. Clearing previous records for fresh Tamil Nadu demo seed...");
+    await db.financialEvent.deleteMany({ where: { organizationId: org } });
+    await db.clientProduct.deleteMany({ where: { organizationId: org } });
+    await db.opportunityStageHistory.deleteMany({});
+    await db.opportunity.deleteMany({ where: { organizationId: org } });
+    await db.followUp.deleteMany({ where: { organizationId: org } });
+    await db.communication.deleteMany({ where: { client: { organizationId: org } } });
+    await db.activity.deleteMany({ where: { organizationId: org } });
+    await db.note.deleteMany({ where: { client: { organizationId: org } } });
+    await db.contactRelationship.deleteMany({});
+    await db.clientTag.deleteMany({});
+    await db.client.deleteMany({ where: { organizationId: org } });
+    await db.contact.deleteMany({ where: { organizationId: org } });
+    await db.productDefinition.deleteMany({ where: { organizationId: org } });
+    await db.provider.deleteMany({ where: { organizationId: org } });
+  } else {
+    console.log("Workspace has records; seed skipped to protect existing data. Use --reset to re-seed.");
+    await db.close();
+    process.exit(0);
+  }
 }
 const names = [
   "Rajesh Kumar",
-  "Meena S",
-  "Arun Kumar",
-  "Priya Nair",
+  "Meenakshi Sundaram",
+  "Arunachalam P",
+  "Priya Natarajan",
   "Suresh Babu",
-  "Kavitha R",
-  "Vikram S",
-  "Anita Joseph",
-  "Mohamed Ali",
+  "Kavitha Ramanathan",
+  "Vikram Saravanan",
+  "Anandhi Thangavel",
+  "Mohamed Riyaz",
   "Divya Shankar",
   "Arun Prakash",
-  "Latha R",
-  "Karthik S",
-  "Nivetha M",
-  "Ramesh K",
-  "Priya Menon",
-  "Divya Sharma",
-  "Manoj Kumar",
+  "Latha Rajagopal",
+  "Karthikeyan S",
+  "Nivetha Murugesan",
+  "Ramesh Kannan",
+  "Balamurugan T",
+  "Selvakumar M",
+  "Manoj Sundar",
   "Senthil Kumar",
-  "Harini S",
-  "Ajay Kulkarni",
-  "Sandeep R",
-  "Gokul V",
-  "Neha Kapoor",
-  "Kishore M",
-  "Deepak S",
-  "Anita Kumar",
-  "Greenfield Textiles",
-  "Lotus Technologies",
-  "Veda Enterprises",
+  "Harini Srinivasan",
+  "Vigneshwaran S",
+  "Sathish Kumar R",
+  "Gokulnath V",
+  "Gayathri Muthuraman",
+  "Kishore Manickam",
+  "Deepak Subramaniam",
+  "Kavitha Rajesh",
+  "Cauvery Textile Mills",
+  "Kongu Precision Engineering",
+  "Chola Agro Foods & Exports",
 ];
-const cities = [
-  "Chennai",
-  "Chennai",
-  "Bengaluru",
+const clientCities = [
   "Chennai",
   "Coimbatore",
+  "Madurai",
+  "Tiruchirappalli",
+  "Salem",
+  "Tirunelveli",
+  "Erode",
+  "Kanchipuram",
+  "Vellore",
+  "Thanjavur",
+  "Chennai",
+  "Karur",
+  "Tiruppur",
   "Chennai",
   "Madurai",
-  "Kochi",
+  "Tiruchirappalli",
+  "Salem",
+  "Nagercoil",
   "Chennai",
-  "Hyderabad",
+  "Chennai",
+  "Coimbatore",
+  "Tirunelveli",
+  "Chennai",
+  "Karaikudi",
+  "Dindigul",
+  "Chennai",
+  "Chennai",
+  "Tiruppur",
+  "Coimbatore",
+  "Thanjavur",
+];
+const addresses = [
+  "No. 42, 2nd Avenue, Anna Nagar, Chennai, Tamil Nadu – 600040",
+  "No. 18, West Club Road, RS Puram, Coimbatore, Tamil Nadu – 641002",
+  "Plot 105, 80 Feet Road, KK Nagar, Madurai, Tamil Nadu – 625020",
+  "No. 12, 11th Cross, Thillai Nagar, Tiruchirappalli, Tamil Nadu – 620018",
+  "No. 88, Brindavan Road, Fairlands, Salem, Tamil Nadu – 636016",
+  "No. 24, Trivandrum Road, Palayamkottai, Tirunelveli, Tamil Nadu – 627002",
+  "No. 55, Perundurai Road, Erode, Tamil Nadu – 638011",
+  "No. 16, Gandhi Road, Near Kamakshi Temple, Kanchipuram, Tamil Nadu – 631501",
+  "No. 7, Katpadi Main Road, Vellore, Tamil Nadu – 632014",
+  "No. 31, South Rampart, Near Big Temple, Thanjavur, Tamil Nadu – 613001",
+  "No. 14, South Mada Street, Mylapore, Chennai, Tamil Nadu – 600004",
+  "No. 29, Sengunthapuram 3rd Cross, Karur, Tamil Nadu – 639002",
+  "No. 65, Kumaran Road, Tiruppur, Tamil Nadu – 641601",
+  "No. 8, Usman Road, T. Nagar, Chennai, Tamil Nadu – 600017",
+  "No. 112, Simmakkal Main Road, Madurai, Tamil Nadu – 625001",
+  "No. 4, Officers Colony, Cantonment, Tiruchirappalli, Tamil Nadu – 620001",
+  "No. 19, Hasthampatti Main Road, Salem, Tamil Nadu – 636007",
+  "No. 5, Court Road, Nagercoil, Tamil Nadu – 629001",
+  "No. 72, 100 Feet Bypass Road, Velachery, Chennai, Tamil Nadu – 600042",
+  "No. 21, Kasturi Rangan Road, Alwarpet, Chennai, Tamil Nadu – 600018",
+  "No. 450, Avinashi Road, Peelamedu, Coimbatore, Tamil Nadu – 641004",
+  "No. 83, South Bypass Road, Vannarpettai, Tirunelveli, Tamil Nadu – 627003",
+  "No. 15, GST Road, West Tambaram, Chennai, Tamil Nadu – 600045",
+  "No. 9, Subbarayalu Street, Kalanivasal, Karaikudi, Tamil Nadu – 630002",
+  "No. 62, Palani Road, Collectorate Post, Dindigul, Tamil Nadu – 624004",
+  "No. 101, Rajiv Gandhi Salai, OMR, Sholinganallur, Chennai, Tamil Nadu – 600119",
+  "No. 42, 2nd Avenue, Anna Nagar, Chennai, Tamil Nadu – 600040",
+  "SF No. 240/1, Textile Park Road, Tiruppur, Tamil Nadu – 641652",
+  "Plot 18, SIDCO Industrial Estate, Kurichi, Coimbatore, Tamil Nadu – 641021",
+  "NH 67, Cauvery Delta Agro Zone, Thanjavur, Tamil Nadu – 613005",
+];
+const occupations = [
+  "IT Solutions Architect (OMR Chennai)",
+  "Consultant Cardiologist (Coimbatore)",
+  "Civil Infrastructure Contractor (Madurai)",
+  "Engineering College Professor (Trichy)",
+  "Textile Merchant (Salem)",
+  "Educational Institution Secretary (Tirunelveli)",
+  "Auto Components Manufacturer (Erode)",
+  "Silk Weaver & Boutique Owner (Kanchipuram)",
+  "Leather Exporter (Vellore)",
+  "Senior Chartered Accountant (Chennai)",
+  "Rice Mill & Agro Enterprise Owner (Thanjavur)",
+  "Home Textiles Exporter (Karur)",
+  "Knitwear Garments Exporter (Tiruppur)",
+  "Retail Jeweller (T. Nagar Chennai)",
+  "Wholesale Spice & Grain Merchant (Madurai)",
+  "Senior Heavy Equipment Specialist (Trichy)",
+  "Steel & Structural Trader (Salem)",
+  "Rubber & Spice Planter (Nagercoil)",
+  "Fintech Software Lead (Velachery Chennai)",
+  "Classical Arts Academy Director (Chennai)",
+  "Precision Engineering Founder (Coimbatore)",
+  "Renewable & Wind Energy Consultant (Tirunelveli)",
+  "Aerospace Component Engineer (Tambaram)",
+  "Chettinad Heritage Hospitality (Karaikudi)",
+  "Foundry & Casting Operator (Dindigul)",
+  "AI & Machine Learning Scientist (OMR Chennai)",
+  "Architectural & Interior Designer (Chennai)",
+];
+const industries = [
+  "Textiles & Knitwear Apparel",
+  "Automotive Precision Engineering",
+  "Agro Food Processing & Exports",
+];
+const clientNotes = [
+  "Prefers evening calls after 6 PM. Family portfolio review planned for Diwali season.",
+  "Consultant cardiologist at RS Puram. Prefers meeting during morning clinic break.",
+  "Madurai municipal contractor. Exploring commercial equipment financing options.",
+  "Birthday today (04 Sep). Follow up on children education annuity plan.",
+  "Salem textile merchant. Follow up on keyman insurance renewal before grace period.",
+  "Managing trustee of Tirunelveli educational society. Interested in institutional gratuity funds.",
+  "Supplies components to Coimbatore auto cluster. Review comprehensive plant fire insurance.",
+  "Traditional Kanchipuram silk enterprise. Reviewing artisan working capital scheme.",
+  "Vellore leather export cluster. Inquiring about foreign exchange risk cover.",
+  "Mylapore residence. Looking for retirement corpus planning and mutual fund SIP top-up.",
+  "Thanjavur delta rice processor. Follow up on warehouse stock insurance and cash credit.",
+  "Karur home textiles exporter. Reviewing marine transit cover for US export shipment.",
+  "Tiruppur knitwear export unit director. Discussion on term insurance cover upgrade.",
+  "Practicing CA in T. Nagar. Interested in high-yield corporate bonds.",
+  "Wholesale spice trader at Simmakkal. Seeking business expansion line of credit.",
+  "BHEL senior engineer. Follow up on superannuation pension top-up options.",
+  "Hasthampatti steel yard owner. Discussing fleet vehicle commercial insurance package.",
+  "Rubber plantation owner in Kanyakumari district. Evaluating agricultural land loan terms.",
+  "Senior engineering manager at TIDEL Park. Reviewing family health floater coverage.",
+  "Adyar arts school founder. Seeking advice on trust corpus investment options.",
+  "Coimbatore foundry owner. Commercial loan inquiry for German CNC machine purchase.",
+  "Windmill operator across Muppandal corridor. Power purchase agreement insurance review.",
+  "Tambaram avionics engineer. Planning child higher education endowment policy.",
+  "Heritage homestay owner in Chettinad. Property all-risk policy under review.",
+  "Lock & hardware manufacturer at Dindigul. Working capital renewal scheduled.",
+  "AI lab researcher on OMR. High net-worth tax-saving investment advisory requested.",
+  "Spouse of Rajesh Kumar. Managing family interior studio portfolio in Anna Nagar.",
+  "Tiruppur export house with 450 sewing stations. Annual fire & marine cargo cover due.",
+  "Coimbatore CNC precision supplier to Chennai EV plant. Working capital limit enhancement under review.",
+  "Thanjavur modern rice mill & organic export unit. Monsoon harvest inventory insurance active.",
 ];
 const specs = [
   ["Life Insurance", "LIC", "Jeevan Anand"],
-  ["Health Insurance", "Star Health", "Family Floater"],
-  ["Vehicle Insurance", "ICICI Lombard", "Motor Protect"],
-  ["Home Loan", "HDFC Bank", "Home Loan"],
-  ["Investment", "Tata Power", "Corporate Bonds"],
-  ["Term Insurance", "Max Life", "Smart Secure"],
-  ["Business Loan", "SBI", "Business Growth"],
+  ["Health Insurance", "Star Health", "Family Health Optima"],
+  ["Vehicle Insurance", "United India Insurance", "Motor Secure"],
+  ["Home Loan", "Indian Bank", "IB Home Loan"],
+  ["Investment", "Sundaram Mutual Fund", "Mid Cap Growth Fund"],
+  ["Term Insurance", "Max Life", "Smart Total Secure"],
+  ["Business Loan", "Canara Bank", "MSME Growth Loan"],
 ];
 await db.transaction(async (tx) => {
   const definitions = [];
@@ -101,7 +239,7 @@ await db.transaction(async (tx) => {
           investmentInterest: "Mutual Funds, Bonds, Debentures",
           loanInterest: "Home Loan, Personal Loan",
           preferredContact: "WhatsApp",
-          notesText: i === 0 ? "Prefers evening calls." : undefined,
+          notesText: clientNotes[i],
           createdAt: new Date("2025-09-01T00:00:00Z"),
           contact: {
             create: {
@@ -110,26 +248,19 @@ await db.transaction(async (tx) => {
               phone: `+91900000${String(i + 1).padStart(4, "0")}`,
               email: `${name.toLowerCase().replaceAll(" ", ".")}@example.test`,
               kind,
-              city: cities[i % 10],
-              state:
-                cities[i % 10] === "Bengaluru"
-                  ? "Karnataka"
-                  : cities[i % 10] === "Kochi"
-                    ? "Kerala"
-                    : cities[i % 10] === "Hyderabad"
-                      ? "Telangana"
-                      : "Tamil Nadu",
-              address:
-                i === 0
-                  ? "Anna Nagar, Chennai, Tamil Nadu – 600040"
+              city: clientCities[i],
+              state: "Tamil Nadu",
+              address: addresses[i],
+              occupation:
+                kind === "Individual"
+                  ? occupations[i] || "Professional"
                   : undefined,
-              occupation: kind === "Individual" ? "IT Professional" : undefined,
               dob:
                 kind === "Individual"
                   ? dateOnly(i === 3 ? "1990-09-04" : "1985-03-14")
                   : null,
               ...(kind === "Business"
-                ? { business: { create: { industry: "Services" } } }
+                ? { business: { create: { industry: industries[i - 27] || "Services" } } }
                 : {}),
             },
           },

@@ -14,6 +14,9 @@ async function lockContactChanges(tx: Database, organizationId: string) {
       { session: tx.session, upsert: true },
     );
 }
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { config } from "./config.js";
+import { s3 } from "./documents.js";
 import { audit, HttpError, owned, permit } from "./security.js";
 import {
   clientInclude,
@@ -492,6 +495,87 @@ clients.patch("/:id", permit("edit"), async (req, res) => {
     });
   });
   res.json({ data: flattenClient(c) });
+});
+clients.delete("/:id", permit("edit"), async (req, res) => {
+  const c = await owned("client", String(req.params.id), req);
+  await db.transaction(async (tx) => {
+    await lockContactChanges(tx, req.auth.organizationId);
+
+    // 1. Opportunities and stage history
+    const opportunities = await tx.opportunity.findMany({
+      where: { clientId: c.id },
+      select: { id: true },
+    });
+    if (opportunities.length) {
+      const oppIds = opportunities.map((o: any) => o.id);
+      await tx.opportunityStageHistory.deleteMany({
+        where: { opportunityId: { in: oppIds } },
+      });
+      await tx.opportunity.deleteMany({ where: { id: { in: oppIds } } });
+    }
+
+    // 2. Financial events and payments
+    const events = await tx.financialEvent.findMany({
+      where: { clientId: c.id },
+      select: { id: true },
+    });
+    if (events.length) {
+      const eventIds = events.map((e: any) => e.id);
+      await tx.payment.deleteMany({ where: { eventId: { in: eventIds } } });
+      await tx.financialEvent.deleteMany({ where: { id: { in: eventIds } } });
+    }
+
+    // 3. Follow-ups and client products
+    await tx.followUp.deleteMany({ where: { clientId: c.id } });
+    await tx.clientProduct.deleteMany({ where: { clientId: c.id } });
+
+    // 4. Documents, jobs, and S3 cleanup
+    const docs = await tx.document.findMany({
+      where: { clientId: c.id },
+      select: { id: true, key: true },
+    });
+    if (docs.length) {
+      const docIds = docs.map((d: any) => d.id);
+      await tx.job.deleteMany({
+        where: {
+          organizationId: req.auth.organizationId,
+          key: { in: docIds.map((id: string) => `scan-${id}`) },
+        },
+      });
+      await tx.document.deleteMany({ where: { id: { in: docIds } } });
+      if (config.S3_BUCKET) {
+        for (const d of docs) {
+          try {
+            await s3.send(
+              new DeleteObjectCommand({ Bucket: config.S3_BUCKET, Key: d.key }),
+            );
+          } catch {
+            // S3 cleanup errors do not block client removal
+          }
+        }
+      }
+    }
+
+    // 5. Communications, notes, consents, and tags
+    await tx.communication.deleteMany({ where: { clientId: c.id } });
+    await tx.note.deleteMany({ where: { clientId: c.id } });
+    await tx.consent.deleteMany({ where: { clientId: c.id } });
+    await tx.clientTag.deleteMany({ where: { clientId: c.id } });
+
+    // 6. Contact relationships and business records
+    await tx.contactRelationship.deleteMany({
+      where: { OR: [{ fromId: c.contactId }, { toId: c.contactId }] },
+    });
+    await tx.business.deleteMany({ where: { contactId: c.contactId } });
+
+    // 7. Client and Contact
+    await tx.client.delete({ where: { id: c.id } });
+    await tx.contact.delete({ where: { id: c.contactId } });
+
+    // 8. Audit log
+    await audit(tx, req, "delete", "Client", c.id, "Client record deleted");
+  });
+  res.json({ data: { success: true } });
 });
 clients.post("/:id/relationships", permit("edit"), async (req, res) => {
   const c = await owned("client", String(req.params.id), req);

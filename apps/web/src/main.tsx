@@ -33,6 +33,7 @@ import {
   Settings,
 } from "./Supporting";
 import Auth from "./Auth";
+import { ThemeProvider } from "./theme";
 import "./styles.css";
 const client = new QueryClient({
   defaultOptions: {
@@ -130,9 +131,11 @@ function App() {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={client}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

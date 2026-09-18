@@ -4,6 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
 import { Botanical, FormError, Submit } from "./components";
+import { ThemeToggle } from "./theme";
 export default function Auth({
   mode = "login",
 }: {
@@ -53,9 +54,12 @@ export default function Auth({
   };
   return (
     <div className="auth-page">
+      <div className="auth-theme-corner">
+        <ThemeToggle />
+      </div>
       <div className="auth-brand">
         <Link className="brand" to="/login">
-          <img src="/assets/leaf-logo.png" alt="" />
+          <img src="/assets/logo.png" alt="" />
           <span>
             <strong>Parvath FinServ</strong>
             <small>Your Financial Partner</small>
