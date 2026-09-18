@@ -106,6 +106,10 @@ export default function Leads() {
               <Filter size={16} />
               More Filters
             </button>
+            <Link className="button primary" to="/leads/new">
+              <Plus size={16} />
+              Add Lead
+            </Link>
           </>
         }
       />
@@ -279,12 +283,6 @@ function LeadColumn({
           }
         </p>
       </header>
-      <div className="lead-column-cards">
-        {rows.map((l) => (
-          <LeadCard key={l.id} lead={l} />
-        ))}
-        {!rows.length && <p className="empty-column">No opportunities</p>}
-      </div>
       <Link
         className="button add-lead"
         to={
@@ -295,6 +293,12 @@ function LeadColumn({
         <Plus size={16} />
         Add {index === 0 ? "New " : ""}Lead
       </Link>
+      <div className="lead-column-cards">
+        {rows.map((l) => (
+          <LeadCard key={l.id} lead={l} />
+        ))}
+        {!rows.length && <p className="empty-column">No opportunities</p>}
+      </div>
     </section>
   );
 }

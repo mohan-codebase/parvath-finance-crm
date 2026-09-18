@@ -36,19 +36,36 @@ html.dark a {
   color: inherit;
 }
 
-html.dark .text-link {
+html.dark .text-link,
+html.dark button.text-link {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
   color: #2dd4bf;
 }
 
-html.dark .text-link:hover {
+html.dark .text-link:hover,
+html.dark button.text-link:hover {
+  background: transparent !important;
+  border: 0 !important;
   color: #5eead4;
 }
 
-html.dark .back-link {
+html.dark .back-link,
+html.dark button.back-link {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
   color: #8b9cb3;
 }
 
-html.dark .back-link:hover {
+html.dark .back-link:hover,
+html.dark button.back-link:hover {
+  background: transparent !important;
+  border: 0 !important;
   color: #f1f5f9;
 }
 
@@ -124,6 +141,19 @@ html.dark .button.primary:hover {
   border-color: #0fa39c;
 }
 
+html.dark button.danger,
+html.dark .button.danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+html.dark button.danger:hover,
+html.dark .button.danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
 html.dark .whatsapp-button {
   background: #103325;
   border-color: #1a573f;
@@ -174,8 +204,21 @@ html.dark .search-input {
   color: #cbd5e1;
 }
 
+html.dark .search-input input,
 html.dark .search-input input:not([type]) {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
   color: #f1f5f9;
+  width: 100%;
+}
+
+html.dark .search-input input:focus {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 html.dark .global-search {
@@ -184,8 +227,27 @@ html.dark .global-search {
   color: #cbd5e1;
 }
 
-html.dark .global-search input {
+html.dark .global-search input,
+html.dark .global-search input:not([type]) {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
   color: #f1f5f9;
+  width: 100%;
+}
+
+html.dark .global-search input:focus {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html.dark .global-search:focus-within,
+html.dark .search-input:focus-within {
+  border-color: #0d8b85;
+  outline: 3px solid #0d8b8544;
 }
 
 html.dark .search-results {
@@ -273,7 +335,23 @@ html.dark .topbar {
 }
 
 html.dark .account > button {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
   color: #f1f5f9;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html.dark .account > button:hover {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.dark .account > button:focus-visible {
+  outline: 2px solid #0d8b85 !important;
+  outline-offset: 4px;
 }
 
 html.dark .account-menu {
@@ -289,12 +367,42 @@ html.dark .account-menu p {
 
 html.dark .account-menu a,
 html.dark .account-menu button {
+  background: transparent;
+  border: 0;
   color: #cbd5e1;
 }
 
 html.dark .account-menu a:hover,
 html.dark .account-menu button:hover {
   background: #1c2a40;
+  border: 0;
+  color: #ffffff;
+}
+
+html.dark .menu-toggle,
+html.dark .drawer-close {
+  background: transparent !important;
+  border: 0 !important;
+  color: #cbd5e1;
+  box-shadow: none !important;
+}
+
+html.dark .menu-toggle:hover,
+html.dark .drawer-close:hover {
+  background: transparent !important;
+  border: 0 !important;
+  color: #f1f5f9;
+}
+
+html.dark .icon-button {
+  background: transparent;
+  border: 0;
+  color: #cbd5e1;
+}
+
+html.dark .icon-button:hover {
+  background: #1c2a40;
+  border: 0;
   color: #ffffff;
 }
 
@@ -577,10 +685,20 @@ html.dark .tabs {
 }
 
 html.dark .tabs button {
+  background: transparent !important;
+  border: 0 !important;
   color: #8b9cb3;
 }
 
+html.dark .tabs button:hover {
+  background: transparent !important;
+  border: 0 !important;
+  color: #cbd5e1;
+}
+
 html.dark .tabs button.selected {
+  background: transparent !important;
+  border: 0 !important;
   color: #2dd4bf;
 }
 

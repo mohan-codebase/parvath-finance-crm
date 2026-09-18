@@ -19,6 +19,7 @@
     "test:integration": "vitest run tests/api.test.ts",
     "db:migrate": "tsx apps/api/src/persistence/migrate.ts",
     "db:seed": "tsx apps/api/src/seed.ts",
+    "db:seed:1000": "tsx scripts/seed-1000-clients.ts",
     "admin:create": "tsx apps/api/src/admin.ts",
     "worker": "tsx apps/api/src/worker.ts",
     "test:browser": "node scripts/browser-check.mjs",
