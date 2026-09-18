@@ -256,7 +256,7 @@ reporting.post("/communications", permit("operate"), async (req, res) => {
     })
     .parse(req.body);
   await owned("client", v.clientId, req);
-  const c = await db.$transaction(async (tx) => {
+  const c = await db.transaction(async (tx) => {
     const row = await tx.communication.create({
       data: { ...v, actorId: req.auth.userId, createdAt: now() },
     });

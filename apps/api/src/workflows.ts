@@ -62,7 +62,7 @@ workflows.post("/members", permit("admin"), async (req, res) => {
       409,
       "An account with that email already exists. Contact the account owner; automatic cross-workspace linking is disabled.",
     );
-  const u = await db.$transaction(async (tx) => {
+  const u = await db.transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
         name: v.name,
@@ -99,7 +99,7 @@ workflows.patch("/members/:id", permit("admin"), async (req, res) => {
   if (!m) throw new HttpError(404, "Membership not found");
   if (m.userId === req.auth.userId)
     throw new HttpError(409, "You cannot change your own administrator role");
-  await db.$transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     await tx.membership.update({ where: { id: m.id }, data: { role } });
     await audit(tx, req, "role", "Membership", m.id, "Workspace role updated");
   });
@@ -209,7 +209,7 @@ workflows.post("/leads", permit("edit"), async (req, res) => {
     );
   await owned("client", v.clientId, req);
   await validOwner(v.ownerId, req);
-  const row = await db.$transaction(async (tx) => {
+  const row = await db.transaction(async (tx) => {
     const o = await tx.opportunity.create({
       data: {
         ...v,
@@ -311,7 +311,7 @@ workflows.post("/leads/:id/stage", permit("edit"), async (req, res) => {
         "Accepted sales retain their fulfilment history. Create a new opportunity for a new requirement.",
       );
   }
-  const r = await db.$transaction(async (tx) => {
+  const r = await db.transaction(async (tx) => {
     const count = await tx.opportunity.updateMany({
       where: { id: old.id, version: v.version },
       data: {
@@ -355,7 +355,7 @@ workflows.post("/leads/:id/convert", permit("edit"), async (req, res) => {
     })
     .parse(req.body);
   await owned("productDefinition", v.definitionId, req);
-  const product = await db.$transaction(async (tx) => {
+  const product = await db.transaction(async (tx) => {
     const existing = await tx.clientProduct.findUnique({
       where: { opportunityId: old.id },
     });
@@ -447,7 +447,7 @@ workflows.post("/products", permit("edit"), async (req, res) => {
   const v = productSchema.parse(req.body);
   await owned("client", v.clientId, req);
   await owned("productDefinition", v.definitionId, req);
-  const r = await db.$transaction(async (tx) => {
+  const r = await db.transaction(async (tx) => {
     const p = await tx.clientProduct.create({
       data: {
         ...v,
@@ -642,7 +642,7 @@ workflows.post("/renewals/:id/payment", permit("operate"), async (req, res) => {
     .parse(req.body);
   if (e.type === "Loan review")
     throw new HttpError(400, "A review has no payment");
-  const result = await db.$transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const existing = await tx.payment.findUnique({
       where: { eventId_reference: { eventId: e.id, reference: v.reference } },
     });
@@ -694,7 +694,7 @@ workflows.post(
   async (req, res) => {
     const old = await owned("financialEvent", String(req.params.id), req);
     const v = z.object({ version: z.number().int() }).parse(req.body);
-    const result = await db.$transaction(async (tx) => {
+    const result = await db.transaction(async (tx) => {
       const e = await tx.financialEvent.findUniqueOrThrow({
         where: { id: old.id },
         include: { payments: true },
@@ -849,7 +849,7 @@ workflows.post("/followups", permit("operate"), async (req, res) => {
         );
     }
   }
-  const f = await db.$transaction(async (tx) => {
+  const f = await db.transaction(async (tx) => {
     const row = await tx.followUp.create({
       data: {
         ...v,
@@ -895,7 +895,7 @@ workflows.patch("/followups/:id", permit("operate"), async (req, res) => {
     throw new HttpError(409, "Only pending follow-ups can be edited");
   await validOwner(v.ownerId, req);
   const { version, ...data } = v;
-  const r = await db.$transaction(async (tx) => {
+  const r = await db.transaction(async (tx) => {
     const change = await tx.followUp.updateMany({
       where: { id: f.id, version, state: "pending" },
       data: { ...data, dueAt: new Date(data.dueAt), version: { increment: 1 } },
@@ -933,7 +933,7 @@ workflows.post(
         nextDueAt: z.iso.datetime().optional(),
       })
       .parse(req.body);
-    const result = await db.$transaction(async (tx) => {
+    const result = await db.transaction(async (tx) => {
       if (f.state === v.state) return f;
       if (f.state !== "pending")
         throw new HttpError(409, "Follow-up already closed");

@@ -3,30 +3,33 @@ on: [push, pull_request]
 jobs:
   verify:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_PASSWORD: test-only-password
-          POSTGRES_USER: parvath
-          POSTGRES_DB: parvath_test
-        ports: [5432:5432]
-        options: >-
-          --health-cmd "pg_isready -U parvath -d parvath_test"
-          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       NODE_ENV: test
       APP_ORIGIN: http://localhost:5177
-      DATABASE_URL: postgresql://parvath:test-only-password@localhost:5432/parvath_test
-      TEST_DATABASE_URL: postgresql://parvath:test-only-password@localhost:5432/parvath_test
+      MONGODB_URI: mongodb://127.0.0.1:27017/?replicaSet=ci&directConnection=true
+      MONGODB_DB: parvath_ci_dev
+      TEST_MONGODB_URI: mongodb://127.0.0.1:27017/?replicaSet=ci&directConnection=true
+      TEST_MONGODB_DB: parvath_ci_test
       SESSION_SECRET: ci-only-ephemeral-secret-with-at-least-32-characters
       DEMO_DATE: 2026-09-04T06:30:00.000Z
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 24, cache: npm }
+      - name: Start MongoDB replica set
+        run: |
+          docker run -d --name crm-mongo -p 127.0.0.1:27017:27017 mongo:8.0 --replSet ci --bind_ip_all
+          for i in $(seq 1 30); do
+            docker exec crm-mongo mongosh --quiet --eval 'db.adminCommand({ping:1})' && break
+            sleep 1
+          done
+          docker exec crm-mongo mongosh --quiet --eval 'rs.initiate({_id:"ci",members:[{_id:0,host:"localhost:27017"}]})'
+          for i in $(seq 1 30); do
+            docker exec crm-mongo mongosh --quiet --eval 'if(!db.hello().isWritablePrimary)quit(1)' && break
+            sleep 1
+          done
+          docker exec crm-mongo mongosh --quiet --eval 'if(!db.hello().isWritablePrimary)quit(1)'
       - run: npm ci
-      - run: npm run db:generate
       - run: npm run db:migrate
       - run: npm run lint
       - run: npm run typecheck

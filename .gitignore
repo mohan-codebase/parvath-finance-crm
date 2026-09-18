@@ -7,3 +7,5 @@ apps/web/dist/
 coverage/
 *.log
 .DS_Store
+
+.local-mongodb/

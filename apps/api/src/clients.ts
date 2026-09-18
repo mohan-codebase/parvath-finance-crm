@@ -3,6 +3,17 @@ import { z } from "zod";
 import { parse } from "csv-parse/sync";
 import { clientSchema } from "../../../packages/contracts/src/index.js";
 import { db } from "./db.js";
+import type { Database } from "./persistence/repository.js";
+
+async function lockContactChanges(tx: Database, organizationId: string) {
+  await tx.native
+    .collection<any>("contactLocks")
+    .updateOne(
+      { _id: organizationId },
+      { $inc: { revision: 1 } },
+      { session: tx.session, upsert: true },
+    );
+}
 import { audit, HttpError, owned, permit } from "./security.js";
 import {
   clientInclude,
@@ -61,8 +72,9 @@ export async function duplicates(
   phone: string,
   email?: string,
   exclude?: string,
+  context: Database = db,
 ) {
-  return db.client.findMany({
+  return context.client.findMany({
     where: {
       organizationId: org,
       id: exclude ? { not: exclude } : undefined,
@@ -250,59 +262,57 @@ clients.post("/import/preview", permit("edit"), async (req, res) => {
 });
 clients.post("/import/:id/commit", permit("edit"), async (req, res) => {
   await owned("importJob", String(req.params.id), req);
-  const job = await db.$transaction(
-    async (tx) => {
-      const j = await tx.importJob.findUniqueOrThrow({
-        where: { id: String(req.params.id) },
-      });
-      if (j.state === "Completed") return j;
-      const lock = await tx.importJob.updateMany({
-        where: { id: j.id, state: "Preview" },
-        data: { state: "Processing" },
-      });
-      if (!lock.count) throw new HttpError(409, "Import already processing");
-      let created = 0;
-      const errors: any[] = [];
-      for (const r of j.rows as any[]) {
-        if (r.error) {
-          errors.push({ row: r.row, error: r.error });
-          continue;
-        }
-        const v = clientSchema.parse(r.data);
-        const match = await tx.contact.count({
-          where: {
-            organizationId: req.auth.organizationId,
-            OR: [{ phone: v.phone }, ...(v.email ? [{ email: v.email }] : [])],
-          },
-        });
-        if (match) {
-          errors.push({
-            row: r.row,
-            error: "Duplicate detected during commit",
-          });
-          continue;
-        }
-        await createClient(tx, v, req.auth.organizationId, req.auth.userId);
-        created++;
+  const job = await db.transaction(async (tx) => {
+    const j = await tx.importJob.findUniqueOrThrow({
+      where: { id: String(req.params.id) },
+    });
+    if (j.state === "Completed") return j;
+    const lock = await tx.importJob.updateMany({
+      where: { id: j.id, state: "Preview" },
+      data: { state: "Processing" },
+    });
+    if (!lock.count) throw new HttpError(409, "Import already processing");
+    await lockContactChanges(tx, req.auth.organizationId);
+    let created = 0;
+    const errors: any[] = [];
+    for (const r of j.rows as any[]) {
+      if (r.error) {
+        errors.push({ row: r.row, error: r.error });
+        continue;
       }
-      await audit(
-        tx,
-        req,
-        "import",
-        "ImportJob",
-        j.id,
-        `Imported ${created} clients`,
-      );
-      return tx.importJob.update({
-        where: { id: j.id },
-        data: {
-          state: "Completed",
-          result: { created, skipped: errors.length, errors },
+      const v = clientSchema.parse(r.data);
+      const match = await tx.contact.count({
+        where: {
+          organizationId: req.auth.organizationId,
+          OR: [{ phone: v.phone }, ...(v.email ? [{ email: v.email }] : [])],
         },
       });
-    },
-    { isolationLevel: "Serializable", timeout: 30000 },
-  );
+      if (match) {
+        errors.push({
+          row: r.row,
+          error: "Duplicate detected during commit",
+        });
+        continue;
+      }
+      await createClient(tx, v, req.auth.organizationId, req.auth.userId);
+      created++;
+    }
+    await audit(
+      tx,
+      req,
+      "import",
+      "ImportJob",
+      j.id,
+      `Imported ${created} clients`,
+    );
+    return tx.importJob.update({
+      where: { id: j.id },
+      data: {
+        state: "Completed",
+        result: { created, skipped: errors.length, errors },
+      },
+    });
+  });
   res.json({ data: job });
 });
 clients.post("/", permit("edit"), async (req, res) => {
@@ -314,7 +324,24 @@ clients.post("/", permit("edit"), async (req, res) => {
       "A contact already uses this phone or email. Review before creating another.",
       dup.map(flattenClient),
     );
-  const row = await db.$transaction(async (tx) => {
+  const row = await db.transaction(async (tx) => {
+    await lockContactChanges(tx, req.auth.organizationId);
+    const currentDuplicates = await duplicates(
+      req.auth.organizationId,
+      v.phone,
+      v.email,
+      undefined,
+      tx,
+    );
+    if (
+      currentDuplicates.length &&
+      (!v.allowDuplicate || !v.duplicateReason?.trim())
+    )
+      throw new HttpError(
+        409,
+        "Contact details match another client; review before creating",
+        currentDuplicates.map(flattenClient),
+      );
     const c = await createClient(
       tx,
       v,
@@ -409,7 +436,22 @@ clients.patch("/:id", permit("edit"), async (req, res) => {
       "Contact details match another client",
       dup.map(flattenClient),
     );
-  const c = await db.$transaction(async (tx) => {
+  const c = await db.transaction(async (tx) => {
+    await lockContactChanges(tx, req.auth.organizationId);
+    const changedContact =
+      original.phone !== v.phone || (original.email || "") !== (v.email || "");
+    const currentDuplicates = changedContact
+      ? await duplicates(req.auth.organizationId, v.phone, v.email, old.id, tx)
+      : [];
+    if (
+      currentDuplicates.length &&
+      (!v.allowDuplicate || !v.duplicateReason?.trim())
+    )
+      throw new HttpError(
+        409,
+        "Contact details match another client; review before saving",
+        currentDuplicates.map(flattenClient),
+      );
     const count = await tx.client.updateMany({
       where: { id: old.id, version: v.version },
       data: { ...d.client, version: { increment: 1 } },
@@ -485,7 +527,7 @@ clients.post("/:id/notes", permit("operate"), async (req, res) => {
   const { body } = z
     .object({ body: z.string().trim().min(1).max(5000) })
     .parse(req.body);
-  const note = await db.$transaction(async (tx) => {
+  const note = await db.transaction(async (tx) => {
     const n = await tx.note.create({
       data: {
         clientId: c.id,
@@ -518,7 +560,7 @@ clients.post("/bulk", permit("edit"), async (req, res) => {
       status: z.enum(["Active", "Needs Attention"]),
     })
     .parse(req.body);
-  const result = await db.$transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const count = await tx.client.count({
       where: { id: { in: ids }, organizationId: req.auth.organizationId },
     });

@@ -102,7 +102,9 @@ auth.patch("/account", requireAuth, async (req, res) => {
     },
   });
   if (v.newPassword)
-    await db.$executeRaw`DELETE FROM session WHERE sess->>'userId' = ${u.id} AND sid <> ${req.sessionID}`;
+    await db.native
+      .collection<any>("sessions")
+      .deleteMany({ "session.userId": u.id, _id: { $ne: req.sessionID } });
   res.json({ data: { success: true } });
 });
 auth.post(
@@ -157,7 +159,7 @@ auth.post("/reset-password", async (req, res) => {
     })
     .parse(req.body);
   const hash = createHash("sha256").update(v.token).digest("hex");
-  await db.$transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     const reset = await tx.passwordReset.findUnique({
       where: { tokenHash: hash },
     });
@@ -173,7 +175,9 @@ auth.post("/reset-password", async (req, res) => {
       where: { id: reset.userId },
       data: { passwordHash: await argon2.hash(v.password) },
     });
-    await tx.$executeRaw`DELETE FROM session WHERE sess->>'userId' = ${reset.userId}`;
+    await tx.native
+      .collection("sessions")
+      .deleteMany({ "session.userId": reset.userId }, { session: tx.session });
   });
   res.json({ data: { success: true } });
 });

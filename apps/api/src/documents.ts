@@ -69,7 +69,7 @@ documents.post(
       }),
     );
     try {
-      const doc = await db.$transaction(async (tx) => {
+      const doc = await db.transaction(async (tx) => {
         const d = await tx.document.create({
           data: {
             organizationId: req.auth.organizationId,

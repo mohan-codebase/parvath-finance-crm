@@ -2,67 +2,69 @@
 
 ## Configuration
 
-Copy `.env.example` and set every required value. Never commit `.env`. SESSION_SECRET must contain at least 32 random characters. Use a least-privilege database account, a separate migration account where appropriate, and a bucket-scoped S3 service identity rather than MinIO root credentials in production.
+Copy `.env.example` and set required values. SESSION_SECRET must contain at least 32 random characters. MONGODB_URI and MONGODB_DB belong only on the server. Use an Atlas runtime identity restricted to the CRM database and a separate migration identity authorized for validators/indexes. Set TEST_MONGODB_URI/TEST_MONGODB_DB only for isolated tests; never point them at production. See [Atlas setup](mongodb-atlas.md).
 
-Production: NODE_ENV=production, HTTPS APP_ORIGIN, DEMO_DATE empty/unset, secure session secret, managed PostgreSQL, private S3 bucket, ClamAV or equivalent validated scanner, and SMTP for account recovery. CORS allows exactly APP_ORIGIN. Set TRUST_PROXY to the exact number of trusted reverse-proxy hops, never indiscriminately trust client forwarded headers. HTTPS termination and HSTS belong at the ingress; keep API and object-store administration private.
+Production requires NODE_ENV=production, HTTPS APP_ORIGIN, no DEMO_DATE, private S3, an approved scanner, SMTP for account recovery and a real Atlas deployment supporting transactions. Keep Atlas network access restricted to the API/worker hosts or private endpoint. Trust only the configured reverse-proxy hop count; terminate HTTPS at the ingress. Keep object-store administration private.
 
-The sample Compose is a **local development** configuration. When using its `app` profile at http://localhost:8080, set APP_ORIGIN=http://localhost:8080 and NODE_ENV=development. Do not expose it directly as a production deployment. Choose immutable reviewed image digests for MinIO, mc, ClamAV, Mailpit, Node, Nginx and PostgreSQL before a release; the supplied moving tags are for local reproducibility of configuration, not an immutable production bill of materials.
+Compose is **local development infrastructure**. The API and worker read MongoDB settings from `.env` and can use Atlas directly. The optional `local-db` profile starts MongoDB 8 and replica-set initialization; it is not production database configuration. Use APP_ORIGIN=http://localhost:8080 and NODE_ENV=development for the local web container. Resolve reviewed immutable image digests before a release.
 
 ## Build and deploy
 
 ```sh
 npm ci
-npm run db:generate
 npm run lint
 npm run typecheck
 npm test
 npm run build
 npm audit --omit=dev
 
+# With Atlas configured, no local database service is needed:
 docker compose --env-file .env -f infra/compose.yaml --profile app build
-# Start dependencies, then run migrations before starting the API.
-docker compose --env-file .env -f infra/compose.yaml up -d postgres minio bucket-init clamav mailpit
-docker compose --env-file .env -f infra/compose.yaml --profile app run --rm api npm run db:migrate
+docker compose --env-file .env -f infra/compose.yaml up -d minio bucket-init clamav mailpit
+# Run once with the migration identity before starting the API:
+docker compose --env-file .env -f infra/compose.yaml --profile app run --rm api node dist/apps/api/src/persistence/migrate.js
 docker compose --env-file .env -f infra/compose.yaml --profile app up -d api worker web
 ```
 
-Provision the first administrator through `node dist/apps/api/src/admin.js` inside the API image, with ADMIN_* environment variables supplied securely. Never run the demo seed in production. The production Docker image contains compiled server code; the worker command is `node dist/apps/api/src/worker.js`. Web output is `apps/web/dist`; Nginx serves the SPA and proxies `/api` to the API.
+Provision the first administrator using `node dist/apps/api/src/admin.js` inside the API image with secure ADMIN_* variables. Do not reseed an existing migrated database. The worker command is `node dist/apps/api/src/worker.js`; the API command is `node dist/apps/api/src/index.js`. Nginx serves `apps/web/dist` and proxies `/api` to port 4007.
 
-No public deployment was performed in this task.
+The optional `pg` devDependency is used only by staging cutover/reconciliation scripts. API, worker, sessions, migrations and tests have no PostgreSQL connection. No Prisma code generation is needed. No public deployment has been performed.
 
-## Health, observability and shutdown
+## Health, logs and shutdown
 
 - `/api/health`: process liveness.
-- `/api/ready`: database connectivity. External S3/scanner/SMTP configuration must be checked as a separate release gate; readiness does not certify those services.
-- Pino emits structured JSON, request IDs, response statuses and durations; request bodies, cookies, authorization headers and query strings are not logged.
-- Central error middleware is the error-monitoring integration point. Add a server-side Sentry/OpenTelemetry adapter with PII collection disabled; log a request ID, not client records.
-- Alert on elevated 5xx/latency, login failures, database saturation, failed/stale Job rows, growing quarantine, scan failures and backup age.
-- SIGTERM/SIGINT closes HTTP acceptance, drains connections, disconnects Prisma and the session pool. A 10-second guard ends stuck API shutdown. Workers finish the current bounded job, then disconnect.
-- For multiple API replicas, move auth/API rate limits to the shared ingress or a shared store. The current in-process limiter is appropriate for one API instance.
+- `/api/ready`: MongoDB ping and schema-version marker. It does not certify S3, scanning, SMTP or Atlas backup configuration.
+- Startup refuses a standalone MongoDB server and logs a sanitized connection failure without the URI. Atlas connection failures require checking credentials, IP/private endpoint access and cluster availability.
+- Pino logs structured request IDs, method/path/status/duration; bodies, cookies, authorization values and query strings are not logged. The central error middleware is the integration point for monitoring with PII collection disabled.
+- Monitor failed/stale Job documents, growing quarantine, scan failures, database latency, connection pool pressure, login failures and backup age.
+- API SIGTERM/SIGINT stops accepting traffic, drains HTTP requests and closes the MongoDB client shared with the session store. A 10-second guard bounds shutdown. Workers finish the current bounded job then close their client.
+- Current auth/API rate limits are per API process. Use a shared ingress/store before running multiple replicas. Password login/reset limits do not count ordinary authenticated session checks.
 
-## Reminders and documents
+## Jobs, sessions and documents
 
-Run at least one worker. Claiming and retry state is durable in PostgreSQL; multiple workers use SKIP LOCKED. Retries use exponential delays and fail after five attempts. Administrator Settings shows failures and retry actions. Fixed demo time does not advance automatically; future reminders require advancing/removing DEMO_DATE for a live scheduling demonstration. Document scanning must not be bypassed to make demos appear successful.
+Run at least one worker. MongoDB atomically claims jobs; a five-minute server-time lease and token fence stale workers. Retries use exponential delay and fail after five attempts. Administrator Settings displays failures and allows retry. Notification IDs equal job IDs to prevent duplication after a crash. Event confirmation cancels obsolete reminders.
 
-MinIO bucket initialization explicitly sets anonymous access to none. S3 credentials stay on the server. Uploaded bytes are signature-checked, assigned an unguessable key and quarantined. ClamAV INSTREAM must be reachable privately; validate with a clean sample and EICAR test file in a nonproduction environment. Confirm rejected/quarantined downloads return 409 and cross-workspace requests return 404. Object storage is cleaned if metadata insertion fails; an operator should reconcile orphan objects after process-level failures.
+With a fixed demo clock, future business reminders do not become due until DEMO_DATE advances or is removed. Session expiry and job lease time use real time. Session TTL deletion is eventual; the store still rejects an expired session immediately. Password changes/reset revoke the affected stored sessions. Do not manually delete session indexes.
 
-Messaging defaults to manual/deep links. WhatsApp Business and transactional email delivery adapters/webhook signature validation are external integration work; unavailable automation must remain disabled. SMTP password recovery uses the configured transport. Test delivery, expiry, single-use reset and session revocation before release.
+S3 files stay private. Detected signatures, allowed extensions and a 10 MB limit are enforced before quarantine. ClamAV INSTREAM must be privately reachable. Validate clean-file release and EICAR rejection in a nonproduction environment. Cross-workspace downloads return 404; quarantined/rejected files cannot be downloaded. Reconcile orphan objects after process-level failures.
+
+WhatsApp/email/call deep links and manually recorded outcomes remain the supported communication modes. Automated provider delivery/webhook adapters are not implemented. SMTP recovery delivery requires a configured transport. Missing providers must remain visible failures rather than simulated success.
 
 ## Backup and restore
 
-1. Back up PostgreSQL with managed snapshots/WAL archiving or `pg_dump --format=custom`. Encrypt backups, restrict access, define retention and verify backup completion.
-2. Enable S3 object versioning and private replication/lifecycle policies as appropriate. Back up documents alongside database metadata at a consistent recovery point.
-3. Store secrets separately in a secret manager; do not include plaintext credentials in backup logs.
-4. Restore into an isolated workspace with outbound messaging disabled. Use `pg_restore` against a new database, restore the corresponding object versions, and verify metadata references, ownership, scan status, financial totals and representative downloads.
-5. Rotate restored session secrets and clear restored sessions/reset tokens before allowing users in. Resume workers only after checking queued jobs against restored event state.
-6. Perform and record periodic restore drills, including RPO/RTO measurements. No restore drill has been certified by this build.
+1. Configure Atlas backups and point-in-time recovery appropriate to the selected cluster tier and business recovery targets. Monitor successful snapshots and retention. Do not assume a development cluster has production backup protection.
+2. For a controlled logical backup use MongoDB Database Tools (`mongodump`/`mongorestore`) with a securely supplied connection configuration. Keep credentials out of shell history and logs. Use a consistent snapshot or write freeze for related collections.
+3. Enable private S3 versioning/replication/lifecycle rules as appropriate and coordinate file recovery with metadata recovery points.
+4. Restore into an isolated MongoDB database with outbound messaging/workers disabled. Restore the matching object versions; verify references, permissions, exact financial amounts, collection validators/indexes and representative document downloads.
+5. Invalidate restored sessions/reset tokens and rotate the restored session secret. Audit queued jobs against restored event state before starting workers.
+6. Record restore drills and measured RPO/RTO. This build has not certified a restore drill or Atlas backup policy.
 
-## Migrations and rollback
+## Schema changes and rollback
 
-SQL migrations are additive and versioned. Apply `prisma migrate deploy` once before rolling out compatible application instances. Back up first; inspect migration SQL and lock duration in staging. Do not use `migrate reset` on populated environments. Runtime-created legacy session tables are registered with CREATE TABLE IF NOT EXISTS in the second migration.
+`npm run db:migrate` (compiled equivalent above) is additive/idempotent setup for the current MongoDB collections, validators, indexes and session TTL. It records version `001-mongodb` and does not drop data or indexes. Back up before applying changes; use a migration identity and inspect collection/index changes in staging. Future incompatible schema changes need explicit versioned backfills and an expand/migrate/contract plan.
 
-Tag application images and retain the prior known-good version. Prefer expand/migrate/contract changes so the prior app remains schema-compatible. Roll back the image first when compatible. For incompatible database changes, stop writes/workers and execute a reviewed forward-fix or restore the coordinated database/object-store recovery point. Never casually reverse migrations containing live financial history.
+Retain prior application images and coordinate rollback with schema compatibility. The pre-MongoDB code and SQL migrations are preserved in commit `b114bc7`; PostgreSQL was left untouched during local cutover. Before MongoDB accepts new writes, that source can be used to abort cutover. After new writes, switching back without reconciling them would lose data. Freeze writes and execute a reviewed recovery/delta migration instead. There is no automatic dual-write or reverse-migration service.
 
-## Outstanding release gates
+## Unverified external release requirements
 
-The local host has no Docker executable, so image builds/Compose startup were not exercised. S3/ClamAV upload-release/download, actual SMTP reset delivery, TLS ingress, production IAM, external provider callbacks, shared rate limiting for replicas, backup restoration and an independent security assessment must be completed before calling this production-ready. These are explicit external dependencies, not mocked successful integrations.
+Company Atlas credentials/network access have not been provided, so Atlas connectivity and production IAM/TLS are unverified. This host has no Docker executable; image builds, Compose startup and the updated Docker-based CI job have not been run here. Live S3/ClamAV/SMTP integration, backup restoration, production load, multi-replica limits and independent security/accessibility review remain release requirements. Local replica-set and browser checks do not certify production readiness.

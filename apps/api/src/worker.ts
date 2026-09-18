@@ -1,4 +1,5 @@
 import net from "node:net";
+import { randomUUID } from "node:crypto";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "./db.js";
 import { config } from "./config.js";
@@ -8,18 +9,38 @@ import pino from "pino";
 const log = pino({ level: config.NODE_ENV === "test" ? "silent" : "info" });
 let stopping = false;
 export async function runJob() {
-  const jobs = await db.$queryRaw<
-    any[]
-  >`UPDATE "Job" SET state='processing', "lockedAt"=NOW(), attempts=attempts+1 WHERE id=(SELECT id FROM "Job" WHERE (state='pending' AND "runAt"<=${now()}) OR (state='processing' AND "lockedAt"<NOW()-INTERVAL '5 minutes') ORDER BY "runAt" FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`;
-  const job = jobs[0];
+  const leaseToken = randomUUID();
+  const job = await db.native.collection<any>("Job").findOneAndUpdate(
+    {
+      $or: [
+        { state: "pending", runAt: { $lte: now() } },
+        {
+          state: "processing",
+          $expr: { $lt: ["$lockedAt", { $subtract: ["$$NOW", 5 * 60000] }] },
+        },
+      ],
+    },
+    [
+      {
+        $set: {
+          state: "processing",
+          lockedAt: "$$NOW",
+          leaseToken,
+          attempts: { $add: ["$attempts", 1] },
+        },
+      },
+    ],
+    { sort: { runAt: 1, id: 1 }, returnDocument: "after" },
+  );
   if (!job) return false;
   try {
     if (job.type === "reminder")
-      await db.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const current = await tx.job.findUniqueOrThrow({
           where: { id: job.id },
         });
-        if (current.state === "cancelled") return;
+        if (current.state !== "processing" || current.leaseToken !== leaseToken)
+          return;
         const p = job.payload;
         const event = await tx.financialEvent.findFirst({
           where: {
@@ -91,17 +112,21 @@ export async function runJob() {
           socket.write(Buffer.alloc(4));
         });
       });
-      await db.$transaction([
-        db.document.update({
-          where: { id: doc.id },
-          data: { status: clean ? "Available" : "Rejected" },
-        }),
-        db.job.update({ where: { id: job.id }, data: { state: "completed" } }),
-      ]);
+      await db.transaction(async (tx) => {
+        const claimed = await tx.job.updateMany({
+          where: { id: job.id, state: "processing", leaseToken },
+          data: { state: "completed" },
+        });
+        if (claimed.count)
+          await tx.document.update({
+            where: { id: doc.id },
+            data: { status: clean ? "Available" : "Rejected" },
+          });
+      });
     } else throw new Error("UNKNOWN_JOB_TYPE");
   } catch (e) {
     await db.job.updateMany({
-      where: { id: job.id, state: "processing" },
+      where: { id: job.id, state: "processing", leaseToken },
       data: {
         state: job.attempts >= 5 ? "failed" : "pending",
         runAt: new Date(now().getTime() + Math.pow(2, job.attempts) * 60000),
@@ -129,5 +154,5 @@ if (
     const worked = await runJob();
     if (!worked) await new Promise((r) => setTimeout(r, 1000));
   }
-  await db.$disconnect();
+  await db.close();
 }

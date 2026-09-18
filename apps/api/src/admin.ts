@@ -9,7 +9,7 @@ const v = z
     WORKSPACE_NAME: z.string().default("Parvath FinServ"),
   })
   .parse(process.env);
-const user = await db.$transaction(async (tx) => {
+const user = await db.transaction(async (tx) => {
   if (
     await tx.user.findUnique({ where: { email: v.ADMIN_EMAIL.toLowerCase() } })
   )
@@ -31,4 +31,4 @@ const user = await db.$transaction(async (tx) => {
 console.log(
   `Administrator created: ${user.email}. No password has been stored in source files.`,
 );
-await db.$disconnect();
+await db.close();

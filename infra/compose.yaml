@@ -1,19 +1,33 @@
 name: parvath-finserv
 services:
-  postgres:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: parvath
-      POSTGRES_USER: parvath
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
-    ports: ["127.0.0.1:5433:5432"]
-    volumes: ["postgres-data:/var/lib/postgresql/data"]
+  mongodb:
+    image: mongo:8.0
+    profiles: [local-db]
+    command: ["mongod", "--replSet", "parvathLocal", "--bind_ip_all"]
+    ports: ["127.0.0.1:27027:27017"]
+    volumes: ["mongo-data:/data/db"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U parvath -d parvath"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ping:1})"]
       interval: 5s
       timeout: 5s
       retries: 20
     restart: unless-stopped
+  mongo-init:
+    image: mongo:8.0
+    profiles: [local-db]
+    depends_on:
+      mongodb: { condition: service_healthy }
+    entrypoint:
+      [
+        "mongosh",
+        "mongodb://mongodb:27017/?directConnection=true",
+        "--quiet",
+        "--eval",
+      ]
+    command:
+      [
+        'try { rs.status() } catch(e) { rs.initiate({_id:"parvathLocal",members:[{_id:0,host:"mongodb:27017"}]}) }',
+      ]
   minio:
     image: quay.io/minio/minio:latest
     command: server /data --console-address :9001
@@ -49,14 +63,12 @@ services:
     env_file: ../.env
     environment:
       PORT: 4007
-      DATABASE_URL: postgresql://parvath:${POSTGRES_PASSWORD}@postgres:5432/parvath
       S3_ENDPOINT: http://minio:9000
       S3_BUCKET: parvath-private
       CLAMAV_HOST: clamav
       SMTP_URL: smtp://mailpit:1025
     ports: ["127.0.0.1:4007:4007"]
     depends_on:
-      postgres: { condition: service_healthy }
       bucket-init: { condition: service_completed_successfully }
     healthcheck:
       test:
@@ -78,7 +90,6 @@ services:
     command: ["node", "dist/apps/api/src/worker.js"]
     env_file: ../.env
     environment:
-      DATABASE_URL: postgresql://parvath:${POSTGRES_PASSWORD}@postgres:5432/parvath
       S3_ENDPOINT: http://minio:9000
       S3_BUCKET: parvath-private
       CLAMAV_HOST: clamav
@@ -94,6 +105,6 @@ services:
     depends_on: [api]
     restart: unless-stopped
 volumes:
-  postgres-data:
+  mongo-data:
   documents:
   clamav-data:

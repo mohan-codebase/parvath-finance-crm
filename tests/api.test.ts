@@ -2,8 +2,9 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import request from "supertest";
 import argon2 from "argon2";
 import { createHash, randomUUID } from "node:crypto";
-import { app, sessionPool } from "../apps/api/src/app.js";
+import { app } from "../apps/api/src/app.js";
 import { db } from "../apps/api/src/db.js";
+import { migrateDatabase } from "../apps/api/src/persistence/migrate.js";
 import { runJob } from "../apps/api/src/worker.js";
 const password = "Test-" + randomUUID(),
   prefix = randomUUID();
@@ -40,6 +41,7 @@ async function login(agent: any, email: string) {
   return r.body.data.csrf;
 }
 beforeAll(async () => {
+  await migrateDatabase();
   const a = await db.organization.create({ data: { name: "TEST " + prefix } }),
     b = await db.organization.create({
       data: { name: "TEST foreign " + prefix },
@@ -74,7 +76,7 @@ afterAll(async () => {
     const ids = (await db.client.findMany({ where: { organizationId } })).map(
       (c) => c.id,
     );
-    await db.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await tx.payment.deleteMany({ where: { event: { organizationId } } });
       await tx.followUp.deleteMany({ where: { organizationId } });
       await tx.financialEvent.deleteMany({ where: { organizationId } });
@@ -104,17 +106,24 @@ afterAll(async () => {
         "membership",
       ] as const)
         await (tx[model] as any).deleteMany({ where: { organizationId } });
+      await tx.native
+        .collection<any>("contactLocks")
+        .deleteOne({ _id: organizationId }, { session: tx.session });
       await tx.organization.delete({ where: { id: organizationId } });
     });
   }
+  await db.passwordReset.deleteMany({
+    where: { userId: { in: [owner, opsId, foreignUser].filter(Boolean) } },
+  });
   await db.user.deleteMany({
     where: { id: { in: [owner, opsId, foreignUser].filter(Boolean) } },
   });
-  await db.$executeRaw`DELETE FROM session WHERE sess->>'userId' IN (${owner}, ${opsId}, ${foreignUser})`;
-  await db.$disconnect();
-  await sessionPool.end();
+  await db.native
+    .collection("sessions")
+    .deleteMany({ "session.userId": { $in: [owner, opsId, foreignUser] } });
+  await db.close();
 });
-describe("Authenticated PostgreSQL workflows", () => {
+describe("Authenticated MongoDB workflows", () => {
   it("requires authentication and CSRF", async () => {
     expect((await request(app).get("/api/clients")).status).toBe(401);
     expect((await admin.post("/api/clients").send({})).status).toBe(403);
@@ -309,9 +318,12 @@ describe("Authenticated PostgreSQL workflows", () => {
       definitionId: definition.id,
       identifier: "TEST-" + prefix,
     };
-    const r = await write(`/leads/${lead.id}/convert`, data);
-    expect(r.status, r.text).toBe(200);
-    product = r.body.data;
+    const results = await Promise.all(
+      Array.from({ length: 4 }, () => write(`/leads/${lead.id}/convert`, data)),
+    );
+    for (const result of results) expect(result.status, result.text).toBe(200);
+    expect(new Set(results.map((result) => result.body.data.id)).size).toBe(1);
+    product = results[0].body.data;
     const repeat = await write(`/leads/${lead.id}/convert`, data);
     expect(repeat.body.data.id).toBe(product.id);
     expect(await db.client.count({ where: { organizationId: org } })).toBe(
@@ -467,7 +479,8 @@ describe("Authenticated PostgreSQL workflows", () => {
         runAt: new Date("2026-09-01T00:00:00Z"),
       },
     });
-    await runJob();
+    const claims = await Promise.all([runJob(), runJob(), runJob()]);
+    expect(claims.filter(Boolean)).toHaveLength(1);
     await db.job.update({ where: { id: j.id }, data: { state: "pending" } });
     await runJob();
     expect(await db.notification.count({ where: { id: j.id } })).toBe(1);
@@ -486,6 +499,132 @@ describe("Authenticated PostgreSQL workflows", () => {
       "failed",
     );
     expect((await write(`/jobs/${bad.id}/retry`)).status).toBe(200);
+  });
+  it("rolls back a multi-record MongoDB transaction after a failure", async () => {
+    const id = randomUUID();
+    await expect(
+      db.transaction(async (tx) => {
+        await tx.note.create({
+          data: {
+            id,
+            clientId: client.id,
+            body: "Must roll back",
+            authorId: owner,
+          },
+        });
+        await tx.client.update({
+          where: { id: client.id },
+          data: { notesText: "Must roll back" },
+        });
+        throw new Error("Deliberate rollback");
+      }),
+    ).rejects.toThrow("Deliberate rollback");
+    expect(await db.note.findUnique({ where: { id } })).toBeNull();
+    expect(
+      (await db.client.findUniqueOrThrow({ where: { id: client.id } }))
+        .notesText,
+    ).not.toBe("Must roll back");
+  });
+  it("stores and sums money above the JavaScript safe integer boundary exactly", async () => {
+    const id = randomUUID(),
+      exact = 9007199254740993n;
+    await db.financialEvent.create({
+      data: {
+        id,
+        organizationId: org,
+        clientId: client.id,
+        productId: product.id,
+        type: "Maturity",
+        dueDate: new Date("2030-01-01T00:00:00Z"),
+        amountMinor: exact,
+        amountMeaning: "Investment proceeds",
+      },
+    });
+    await db.payment.create({
+      data: {
+        eventId: id,
+        amountMinor: exact,
+        reference: "EXACT",
+        recordedBy: owner,
+      },
+    });
+    expect(
+      (await db.financialEvent.findUniqueOrThrow({ where: { id } }))
+        .amountMinor,
+    ).toBe(exact);
+    expect(
+      (
+        await db.payment.aggregate({
+          where: { eventId: id },
+          _sum: { amountMinor: true },
+        })
+      )._sum.amountMinor,
+    ).toBe(exact);
+    const raw = await db.native
+      .collection("FinancialEvent")
+      .aggregate([
+        { $match: { id } },
+        { $project: { type: { $type: "$amountMinor" } } },
+      ])
+      .next();
+    expect(raw?.type).toBe("long");
+  });
+  it("enforces collection validation and optional unique opportunity links", async () => {
+    await expect(
+      db.native
+        .collection<any>("FinancialEvent")
+        .insertOne({ _id: randomUUID(), id: randomUUID(), amountMinor: 1.5 }),
+    ).rejects.toMatchObject({ code: 121 });
+    const first = await db.clientProduct.create({
+      data: {
+        organizationId: org,
+        clientId: client.id,
+        definitionId: definition.id,
+        identifier: "OPTIONAL-1-" + prefix,
+        startDate: new Date(),
+      },
+    });
+    const second = await db.clientProduct.create({
+      data: {
+        organizationId: org,
+        clientId: client.id,
+        definitionId: definition.id,
+        identifier: "OPTIONAL-2-" + prefix,
+        startDate: new Date(),
+      },
+    });
+    expect(first.opportunityId).toBeNull();
+    expect(second.opportunityId).toBeNull();
+    await expect(
+      db.clientProduct.create({
+        data: {
+          organizationId: org,
+          clientId: client.id,
+          definitionId: definition.id,
+          opportunityId: lead.id,
+          identifier: "DUP-" + prefix,
+          startDate: new Date(),
+        },
+      }),
+    ).rejects.toMatchObject({ code: 11000 });
+  });
+  it("serializes concurrent duplicate checks without silently adding contacts", async () => {
+    const values = {
+      name: "Concurrent Person",
+      phone: "9000088819",
+      email: `concurrent-${prefix}@example.test`,
+      kind: "Individual",
+    };
+    const responses = await Promise.all([
+      write("/clients", values),
+      write("/clients", values),
+    ]);
+    expect(responses.map((r) => r.status).sort()).toEqual([201, 409]);
+    expect(
+      await db.contact.count({
+        where: { organizationId: org, email: values.email },
+      }),
+    ).toBe(1);
   });
   it("password reset is single-use and revokes existing sessions", async () => {
     const resetToken =

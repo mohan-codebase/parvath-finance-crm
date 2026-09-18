@@ -1,0 +1,137 @@
+{
+  "verifiedAt": "2026-09-18T11:48:53.277Z",
+  "passed": true,
+  "repairedDateRecords": 0,
+  "collections": {
+    "Organization": {
+      "source": 1,
+      "target": 1,
+      "differences": 0
+    },
+    "User": {
+      "source": 1,
+      "target": 1,
+      "differences": 0
+    },
+    "Membership": {
+      "source": 1,
+      "target": 1,
+      "differences": 0
+    },
+    "PasswordReset": {
+      "source": 0,
+      "target": 0,
+      "differences": 0
+    },
+    "Contact": {
+      "source": 30,
+      "target": 30,
+      "differences": 0
+    },
+    "Business": {
+      "source": 3,
+      "target": 3,
+      "differences": 0
+    },
+    "ContactRelationship": {
+      "source": 1,
+      "target": 1,
+      "differences": 0
+    },
+    "Client": {
+      "source": 30,
+      "target": 30,
+      "differences": 0
+    },
+    "Tag": {
+      "source": 5,
+      "target": 5,
+      "differences": 0
+    },
+    "ClientTag": {
+      "source": 5,
+      "target": 5,
+      "differences": 0
+    },
+    "Consent": {
+      "source": 0,
+      "target": 0,
+      "differences": 0
+    },
+    "Provider": {
+      "source": 7,
+      "target": 7,
+      "differences": 0
+    },
+    "ProductDefinition": {
+      "source": 7,
+      "target": 7,
+      "differences": 0
+    },
+    "ClientProduct": {
+      "source": 18,
+      "target": 18,
+      "differences": 0
+    },
+    "Opportunity": {
+      "source": 23,
+      "target": 23,
+      "differences": 0
+    },
+    "OpportunityStageHistory": {
+      "source": 23,
+      "target": 23,
+      "differences": 0
+    },
+    "FinancialEvent": {
+      "source": 14,
+      "target": 14,
+      "differences": 0
+    },
+    "Payment": {
+      "source": 0,
+      "target": 0,
+      "differences": 0
+    },
+    "FollowUp": {
+      "source": 24,
+      "target": 24,
+      "differences": 0
+    },
+    "Communication": {
+      "source": 7,
+      "target": 7,
+      "differences": 0
+    },
+    "Document": {
+      "source": 0,
+      "target": 0,
+      "differences": 0
+    },
+    "Note": {
+      "source": 1,
+      "target": 1,
+      "differences": 0
+    },
+    "Notification": {
+      "source": 1,
+      "target": 1,
+      "differences": 0
+    },
+    "Activity": {
+      "source": 7,
+      "target": 7,
+      "differences": 0
+    },
+    "ImportJob": {
+      "source": 0,
+      "target": 0,
+      "differences": 0
+    },
+    "Job": {
+      "source": 0,
+      "target": 0,
+      "differences": 0
+    }
+  }
+}

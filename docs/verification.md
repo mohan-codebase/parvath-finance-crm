@@ -1,6 +1,6 @@
 # Verification report
 
-Verified locally on 18 September 2026 with Node 24.19.0, PostgreSQL 17.11 and the committed dependency lockfile. The synthetic workspace uses **4 September 2026, 12:00 Asia/Kolkata** as its fixed business clock. Production rejects the demo clock.
+Verified locally on 18 September 2026 with Node 24.19.0, MongoDB 8.2.7 replica set and the committed dependency lockfile. The synthetic workspace uses **4 September 2026, 12:00 Asia/Kolkata** as its fixed business clock. Production rejects the demo clock.
 
 ## Automated checks
 
@@ -9,16 +9,18 @@ Verified locally on 18 September 2026 with Node 24.19.0, PostgreSQL 17.11 and th
 | ESLint | Passed | Application, server and test sources |
 | TypeScript | Passed | API, shared contracts, tests and web |
 | Production build | Passed | Compiled Express server and Vite frontend |
-| Vitest / Supertest | 26 passed | 5 domain and 21 API integration tests against a separate PostgreSQL database |
-| Playwright journeys | 10 checks passed | Real browser with the running Express API and persistent demo database |
+| Vitest / Supertest | 30 passed | 5 domain and 25 API integration tests against a separate MongoDB database |
+| Playwright journeys | 10 checks passed | Real browser with the running Express API and persistent MongoDB demo database |
 | Dependency audit | 0 known vulnerabilities at verification time | Installed dependency graph; not a security certification |
-| Prisma migrations | Passed | Demo and isolated test databases, including session-table registration |
+| MongoDB schema setup | Passed | Repeatable collection validators, indexes, optional uniqueness and session TTL in development and test databases |
 
 API tests cover authentication/CSRF, role restrictions, workspace isolation, private-document access denial, client persistence and reviewed duplicates, linked business contacts, optimistic concurrency, import idempotency, lead history and repeat-safe conversion, product ownership, typed financial events, payment validation, recurring renewal confirmation and reminder cancellation, follow-up outcomes/rescheduling, dashboard totals, India date boundaries, durable reminder retry/deduplication, password reset and session revocation, and repeated session checks without exhausting account-change limits. Opening a conversation is tested separately from verified contact activity.
 
 [Browser journey results](verification/browser-journeys.json) cover sign-in, required-field validation, draft recovery, five-step individual creation, persistent profile editing, accessible lead movement/conversion, payment and renewal confirmation, follow-up rescheduling/completion, business/minimal onboarding and import preview errors. Browser-created records are removed using the narrowly scoped demo cleanup command before visual captures.
 
-The test run emits a PostgreSQL driver deprecation warning about concurrent queries on one client; the pinned driver version passes the suite, and a future major driver upgrade requires revalidation.
+MongoDB-specific checks cover rollback after a multi-record failure, concurrent conversion requests producing one product, competing workers claiming one reminder, BSON Int64 storage and exact aggregation above JavaScript’s safe-integer range, strict collection validation, partial uniqueness for optional opportunity links and serialized concurrent duplicate-contact checks.
+
+The [cutover reconciliation report](verification/mongodb-cutover.json) compares all legacy fields and counts across 26 business collections, with zero differences. UUIDs, password hashes, history, money and calendar dates were preserved. SQL sessions were not copied. PostgreSQL was read-only and remains unchanged. The importer explicitly parses SQL DATE values as UTC-midnight dates.
 
 These are representative checks, not exhaustive penetration, accessibility, load or disaster-recovery testing. Document authorization/quarantine rules were tested; a live clean-file upload, ClamAV release and S3 download round trip was not tested without those external services.
 
@@ -44,7 +46,7 @@ Visual assessment is manual; no numerical pixel-match score is claimed. Automate
 
 ## Reproduce
 
-Follow the setup in [README](../README.md), migrate a separate test database, start the application, and run:
+Follow the setup in [README](../README.md), configure a separate MongoDB test database, start the application, and run:
 
 ```sh
 npm run lint
@@ -58,8 +60,8 @@ npm run test:browser -- visuals
 npm audit --omit=dev
 ```
 
-The browser scenarios are documented in [journeys](browser-journeys.md) and [visuals](browser-visuals.md). The runner materializes executable browser scripts in the operating system temporary directory. Use only the synthetic local workspace with the generated account in the ignored `.env`. HEADLESS=1 is supported for CI. The API/domain suite is also configured in GitHub Actions; browser checks currently run locally.
+The browser scenarios are documented in [journeys](browser-journeys.md) and [visuals](browser-visuals.md). The runner materializes executable browser scripts in the operating system temporary directory. Use only the synthetic local workspace with the generated account in the ignored `.env`. HEADLESS=1 is supported for CI. The API/domain suite is configured in GitHub Actions with a MongoDB replica set; the updated CI job itself has not been executed here. Browser checks run locally.
 
 ## Release limitations
 
-This application has not been published or certified production-ready. Docker is absent on the validation host; Dockerfile builds and Compose startup remain untested. Configure and test private S3/MinIO, ClamAV and SMTP before enabling real document handling and account-recovery delivery. Automated WhatsApp/email sending and delivery webhooks are not implemented; the interface labels deep links and manual outcomes honestly. Production TLS/ingress, reviewed image digests, secrets/IAM, multi-replica rate limits, backup/restore drills, load testing and independent security/accessibility review remain release gates. See [operations](operations.md) for deployment, recovery and rollback procedures.
+This application has not been published or certified production-ready. Company Atlas access has not been provided; the application has been tested against a real local replica set, not the company Atlas cluster. Docker is absent on the validation host; Dockerfile builds and Compose startup remain untested. Configure and test private S3/MinIO, ClamAV and SMTP before enabling real document handling and account-recovery delivery. Automated WhatsApp/email sending and delivery webhooks are not implemented; the interface labels deep links and manual outcomes honestly. Production TLS/ingress, reviewed image digests, secrets/IAM, multi-replica rate limits, backup/restore drills, load testing and independent security/accessibility review remain release gates. See [operations](operations.md) for deployment, recovery and rollback procedures.

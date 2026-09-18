@@ -4,14 +4,13 @@ import { existsSync } from "node:fs";
 import cors from "cors";
 import helmet from "helmet";
 import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
-import pg from "pg";
+import MongoStore from "connect-mongo";
 import pino from "pino";
 import { pinoHttp } from "pino-http";
 import { rateLimit } from "express-rate-limit";
 import { ZodError } from "zod";
 import { config } from "./config.js";
-import { db } from "./db.js";
+import { db, mongoClient } from "./db.js";
 import { auth } from "./auth.js";
 import { clients } from "./clients.js";
 import { workflows } from "./workflows.js";
@@ -29,8 +28,12 @@ export const logger = pino({
     "body",
   ],
 });
-export const sessionPool = new pg.Pool({
-  connectionString: config.DATABASE_URL,
+export const sessionStore = MongoStore.create({
+  clientPromise: Promise.resolve(mongoClient),
+  dbName: config.MONGODB_DB,
+  collectionName: "sessions",
+  stringify: false,
+  autoRemove: "disabled", // TTL index is installed by db:migrate.
 });
 export const app = express();
 app.disable("x-powered-by");
@@ -59,8 +62,14 @@ app.use(
 );
 app.get("/api/health", (_req, res) => res.json({ data: { status: "ok" } }));
 app.get("/api/ready", async (_req, res) => {
-  await db.$queryRaw`SELECT 1`;
-  res.json({ data: { status: "ready" } });
+  await db.native.command({ ping: 1 });
+  if (
+    !(await db.native
+      .collection<any>("schemaVersions")
+      .findOne({ _id: "001-mongodb" }))
+  )
+    throw new HttpError(503, "Database setup is incomplete; run db:migrate");
+  res.json({ data: { status: "ready", database: "mongodb" } });
 });
 app.use("/api", (_req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
@@ -80,10 +89,7 @@ app.use(
 );
 app.use(
   session({
-    store: new (connectPgSimple(session))({
-      pool: sessionPool,
-      createTableIfMissing: true,
-    }),
+    store: sessionStore,
     name: "parvath.sid",
     secret: config.SESSION_SECRET,
     resave: false,
@@ -131,11 +137,15 @@ app.use(
         ? err.status
         : err instanceof ZodError
           ? 422
-          : err.code === "P2002" || err.code === "P2034"
+          : err.code === 11000 || err.code === 112 || err.code === 251
             ? 409
-            : err.code === "LIMIT_FILE_SIZE"
-              ? 413
-              : 500;
+            : err.code === "RECORD_NOT_FOUND"
+              ? 404
+              : err.code === "INVALID_RECORD" || err.code === 121
+                ? 422
+                : err.code === "LIMIT_FILE_SIZE"
+                  ? 413
+                  : 500;
     const message =
       err instanceof ZodError
         ? "Please correct the highlighted fields"

@@ -12,9 +12,13 @@ const schema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
-  PORT: z.coerce.number().default(4000),
+  PORT: z.coerce.number().int().min(1).max(65535).default(4007),
   APP_ORIGIN: z.url(),
-  DATABASE_URL: z.string().min(1),
+  MONGODB_URI: z.string().regex(/^mongodb(?:\+srv)?:\/\//),
+  MONGODB_DB: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .min(1),
   SESSION_SECRET: z.string().min(32),
   DEMO_DATE: z.string().optional(),
   TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),

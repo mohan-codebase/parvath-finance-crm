@@ -19,7 +19,7 @@ const records = candidates.filter(
 const ids = records.map((c) => c.id),
   contacts = records.map((c) => c.contactId);
 if (ids.length)
-  await db.$transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     const events = await tx.financialEvent.findMany({
       where: { clientId: { in: ids } },
       select: { id: true },
@@ -83,4 +83,4 @@ if (ids.length)
 console.log(
   `Removed ${records.length} explicitly named browser-verification clients and their generated records.`,
 );
-await db.$disconnect();
+await db.close();

@@ -1,62 +1,61 @@
 # Parvath FinServ CRM
 
-A React/TypeScript/Tailwind workspace backed by an Express/TypeScript API and PostgreSQL/Prisma. The seven principal screens follow the supplied planner: Dashboard, Clients, Client Profile, Add New Client, Leads, Renewals and Follow-ups. Supporting screens cover products, communications, import review, notifications, settings and authentication.
+React/TypeScript/Tailwind, Express/TypeScript and **MongoDB Atlas**, using the official MongoDB Node.js driver. PostgreSQL and Prisma are no longer application dependencies. The seven reference screens and API contracts remain unchanged.
 
-**Local application:** http://localhost:5177 · **API:** http://localhost:4007/api/health
+**Local app:** http://localhost:5177 · **Readiness:** http://localhost:4007/api/ready
 
-The current workspace has a synthetic demo database and a locally generated administrator. Its email and random password are in the ignored `.env` file (`ADMIN_EMAIL`, `ADMIN_PASSWORD`). No fixed password is shipped or committed. Change the password from Settings after signing in.
+The current local workspace runs on a dedicated MongoDB replica set and contains the migrated synthetic dataset. Local account email/password are in the ignored `.env` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`). Password hashes and record IDs were preserved. No fixed password is shipped. **An actual company Atlas connection has not yet been supplied or verified.**
 
-## Runtime and installation
+## Runtime and setup
 
-- Node **24.11+ / 24.x** (verified with 24.19.0; `.nvmrc` supplied).
-- PostgreSQL **17** (verified locally with 17.11).
-- npm with workspaces; exact resolved dependencies are captured in `package-lock.json`.
-- Docker Compose v2 for optional reproducible PostgreSQL, private MinIO, ClamAV and development SMTP infrastructure.
+- Node **24.11+ / 24.x**, verified with 24.19.0.
+- MongoDB Atlas replica set/sharded cluster, or local MongoDB **8.x replica set**; verified locally with 8.2.7.
+- Exact package versions are in the committed lockfile. MongoDB driver 7.6.0, connect-mongo 6.0.0.
 
 ```sh
 npm ci
 cp .env.example .env
-# Set DATABASE_URL, TEST_DATABASE_URL, APP_ORIGIN and a random SESSION_SECRET.
-# For Docker infrastructure, also set distinct POSTGRES_PASSWORD,
-# S3_ACCESS_KEY and S3_SECRET_KEY.
-npm run db:generate
+```
+
+For Atlas, configure the server's ignored `.env`:
+
+```dotenv
+MONGODB_URI=mongodb+srv://USER:URL_ENCODED_PASSWORD@YOUR_CLUSTER.mongodb.net/?retryWrites=true&w=majority
+MONGODB_DB=parvath_crm_dev
+SESSION_SECRET=your-unique-random-secret-at-least-32-characters
+APP_ORIGIN=http://localhost:5177
+```
+
+Use a **separate CRM development database**. Give the application a database-scoped identity and allow only the API host's IP/private network in Atlas. Use a migration identity authorized to create collections, validators and indexes for `db:migrate`, then switch back to the runtime identity. Never put the URI in React/Vite variables or commit it. Details: [Atlas connection and migration guide](docs/mongodb-atlas.md).
+
+```sh
 npm run db:migrate
-```
-
-Optional local infrastructure:
-
-```sh
-docker compose --env-file .env -f infra/compose.yaml up -d postgres minio bucket-init clamav mailpit
-```
-
-For this Compose database, use port **5433** in the host's DATABASE_URL. For host-run API/worker, use MinIO at `http://localhost:9000`; expose ClamAV on loopback or run the worker inside Compose. Mailpit SMTP is `smtp://localhost:1025`, inbox http://localhost:8025. Do not use Mailpit in production.
-
-## Secure first administrator
-
-Set `ADMIN_EMAIL`, `ADMIN_NAME`, and a **unique 12+ character** `ADMIN_PASSWORD` in your environment or ignored `.env`, then run:
-
-```sh
+# Set ADMIN_EMAIL, ADMIN_NAME and a unique 12+ character ADMIN_PASSWORD first:
 npm run admin:create
-```
-
-This creates a new workspace and its administrator. It refuses to overwrite existing accounts. Remove the administrator password from deployment environment files after provisioning. Additional members and roles can be managed by the administrator in Settings. Existing users are never automatically linked across organizations.
-
-## Demo and development
-
-For synthetic data only, set `DEMO_DATE=2026-09-04T06:30:00.000Z` (4 September 2026, noon in India):
-
-```sh
+# Optional synthetic data only; requires the fixed DEMO_DATE in .env:
 npm run db:seed
 npm run dev
-# Separate terminal for durable reminders / scanning:
+# Separate terminal:
 npm run worker
 ```
 
-The seed refuses production and skips an already populated workspace. It contains synthetic Indian contact names with `example.test` email addresses and invented phone/policy identifiers. Production starts empty and must have `DEMO_DATE` unset.
+An already migrated database does not need another admin or seed. Initial provisioning refuses to replace an existing account. Remove ADMIN_PASSWORD from deployment configuration after provisioning. In production, unset DEMO_DATE and use an HTTPS APP_ORIGIN.
 
-The server uses ports 5177/4007 to avoid other local projects. Set `APP_ORIGIN` to the actual browser origin. There is no automatic unauthenticated demo login.
+## Local development without Atlas
+
+Install MongoDB Community Server, then:
+
+```sh
+npm run db:local
+```
+
+This starts only a loopback-bound development replica set at port **27027**, with data in the ignored `.local-mongodb/` directory. Set `MONGODB_URI=mongodb://127.0.0.1:27027/?replicaSet=parvathLocal` and a separate `MONGODB_DB`. Do not expose the unauthenticated local service externally. Docker Compose offers an alternative `local-db` profile; see the Atlas guide for container/host connection URLs.
+
+The demo clock is `2026-09-04T06:30:00.000Z` (4 September 2026, noon in India). Production starts empty and uses real time.
 
 ## Verification
+
+Set `TEST_MONGODB_URI` and a **different** `TEST_MONGODB_DB` ending in `_test`. Tests refuse the application database name and create/clean their own organizations.
 
 ```sh
 npm run lint
@@ -70,12 +69,14 @@ npm run test:browser -- visuals
 npm audit --omit=dev
 ```
 
-`npm test` requires `TEST_DATABASE_URL` pointing to a **separate migrated database**. Tests create isolated organizations and remove only their own fixtures. Never use a production database.
+See [verification](docs/verification.md), [visual comparison](docs/visual-comparison.html), [architecture and permissions](docs/architecture.md), [API](docs/api.md), and [operations](docs/operations.md).
 
-See [verification results](docs/verification.md), [visual inventory](docs/visual-inventory.md), [architecture and permissions](docs/architecture.md), [API contracts](docs/api.md), and [deployment procedures](docs/operations.md). Reference extractions and browser screenshots are under `docs/reference` and `docs/verification`.
+## Existing PostgreSQL data
 
-## External services and release status
+The optional development-only `db:import-postgres` tool reads a legacy database without modifying it, refuses a populated MongoDB target, and preserves identities and exact amounts. The `pg` package remains only a **devDependency** for this one-time tool; API, worker, sessions, production schema setup and tests use MongoDB exclusively. Follow the cutover and reconciliation procedure in [the migration guide](docs/mongodb-atlas.md). The old implementation and SQL migrations remain available in Git commit `b114bc7` for recovery.
 
-This is a deployable local application, **not a claim of production readiness**. Private document storage and scanning require configured S3/MinIO and ClamAV. Uploads fail explicitly if storage is absent; unscanned files cannot be downloaded. SMTP is required for password-reset delivery. WhatsApp/email/call deep links record only that a conversation was opened; automated messaging and delivery verification are not configured.
+## Release status
 
-Docker is not installed in the build environment, so Compose images and the full S3/ClamAV/SMTP deployment must be validated on a Docker host before release. TLS, infrastructure secrets, provider accounts, backup/restore drills and external security review remain operator responsibilities. No public deployment has been performed.
+No public deployment has been performed. Local MongoDB functionality is verified; Atlas connectivity, production networking/IAM and deployment remain to be verified with the company's configuration. Private S3/MinIO, ClamAV scanning and SMTP are still external requirements. Unconfigured document upload fails explicitly, and unscanned files cannot be downloaded. Automated WhatsApp/email delivery is unavailable; deep links and manual outcomes are labelled honestly.
+
+Docker is not installed on this host, so container builds/Compose startup remain unverified. This is not a production-readiness certification.
