@@ -1,7 +1,5 @@
 import { db } from "../apps/api/src/db.js";
-import { config } from "../apps/api/src/config.js";
-import { dateOnly, now } from "../apps/api/src/domain.js";
-import { stages } from "../packages/contracts/src/index.js";
+import { dateOnly } from "../apps/api/src/domain.js";
 
 // Deterministic PRNG to ensure reproducible, non-repetitive real-time distribution
 function makeRandom(seed = 987654321) {
@@ -12,14 +10,6 @@ function makeRandom(seed = 987654321) {
   };
 }
 const rand = makeRandom(42);
-
-function randInt(min: number, max: number): number {
-  return Math.floor(rand() * (max - min + 1)) + min;
-}
-
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(rand() * arr.length)];
-}
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -972,6 +962,8 @@ main().catch(async (e) => {
   console.error("Seed error:", e);
   try {
     await db.close();
-  } catch {}
+  } catch {
+    // ignore close error
+  }
   process.exit(1);
 });

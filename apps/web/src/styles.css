@@ -2628,17 +2628,26 @@ tbody tr:hover {
 }
 .auth-brand .botanical {
   margin-top: auto;
-  max-width: 350px;
+  max-width: 280px;
   height: 270px;
   background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 0;
 }
 .auth-brand .botanical img {
+  position: relative;
+  left: auto;
+  bottom: auto;
   height: 270px;
   width: 105px;
+  flex-shrink: 0;
 }
 .auth-brand .botanical p {
   font-size: 27px;
-  width: 125px;
+  width: 135px;
 }
 .auth-card {
   max-width: 430px;

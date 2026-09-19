@@ -14,7 +14,7 @@ try {
   await db.close();
   process.exit(1);
 }
-const server = app.listen(config.PORT, () =>
+const server = app.listen(config.PORT, "0.0.0.0", () =>
   logger.info({ port: config.PORT }, "Parvath API listening"),
 );
 const shutdown = () => {

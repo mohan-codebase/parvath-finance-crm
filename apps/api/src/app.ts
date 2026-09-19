@@ -125,6 +125,20 @@ app.use("/api", workflows, reporting, documents);
 app.use("/api", (_req, _res) => {
   throw new HttpError(404, "Endpoint not found");
 });
+const webDistCandidates = [
+  path.resolve("apps/web/dist"),
+  path.resolve("../../apps/web/dist"),
+  path.resolve("dist/apps/web"),
+];
+const webDistPath = webDistCandidates.find((p) =>
+  existsSync(path.join(p, "index.html")),
+);
+if (webDistPath) {
+  app.use(express.static(webDistPath));
+  app.use((_req, res) => {
+    res.sendFile(path.join(webDistPath, "index.html"));
+  });
+}
 app.use(
   (
     err: any,
