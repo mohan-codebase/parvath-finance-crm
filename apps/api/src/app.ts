@@ -35,6 +35,18 @@ export const sessionStore = MongoStore.create({
   stringify: false,
   autoRemove: "disabled", // TTL index is installed by db:migrate.
 });
+export const isAllowedOrigin = (origin?: string, host?: string): boolean => {
+  if (!origin) return true;
+  return (
+    origin === config.APP_ORIGIN ||
+    origin === `https://${host}` ||
+    origin === `http://${host}` ||
+    origin === "https://parvath-finance-crm-production.up.railway.app" ||
+    origin.endsWith(".railway.app") ||
+    origin.endsWith(".vercel.app")
+  );
+};
+
 export const app = express();
 app.disable("x-powered-by");
 app.set("trust proxy", config.TRUST_PROXY);
@@ -43,8 +55,28 @@ app.set("json replacer", (_k: string, v: unknown) =>
 );
 app.use(
   requestId,
-  helmet(),
-  cors({ origin: config.APP_ORIGIN, credentials: true }),
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        fontSrc: ["'self'", "https:", "data:"],
+        connectSrc: ["'self'", "https:", "wss:"],
+      },
+    },
+  }),
+  cors({
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    credentials: true,
+  }),
 );
 app.use(
   pinoHttp({
@@ -104,7 +136,8 @@ app.use(
 );
 app.use("/api", (req, _res, next) => {
   if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
-    if (req.headers.origin && req.headers.origin !== config.APP_ORIGIN)
+    const host = req.get("host");
+    if (!isAllowedOrigin(req.headers.origin, host))
       throw new HttpError(403, "Origin is not allowed");
     if (!req.session.csrf || req.headers["x-csrf-token"] !== req.session.csrf)
       throw new HttpError(403, "Security token expired. Refresh the page.");
