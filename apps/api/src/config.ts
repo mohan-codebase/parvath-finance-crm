@@ -32,7 +32,29 @@ const schema = z.object({
   SMTP_URL: z.string().optional(),
   MAIL_FROM: z.string().default("no-reply@example.com"),
 });
-export const config = schema.parse(process.env);
+// Auto-detect public URL on Railway if APP_ORIGIN is not explicitly provided
+if (!process.env.APP_ORIGIN) {
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    process.env.APP_ORIGIN = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  } else if (process.env.RAILWAY_STATIC_URL) {
+    process.env.APP_ORIGIN = `https://${process.env.RAILWAY_STATIC_URL}`;
+  }
+}
+if (!process.env.TRUST_PROXY && process.env.RAILWAY_ENVIRONMENT) {
+  process.env.TRUST_PROXY = "1";
+}
+
+let parsedConfig: z.infer<typeof schema>;
+try {
+  parsedConfig = schema.parse(process.env);
+} catch (err) {
+  if (err instanceof z.ZodError) {
+    const missing = err.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`).join("\n");
+    console.error(`\n❌ [CRM Config Error] Missing or invalid environment variables:\n${missing}\n\n👉 Please configure these in Railway under the "Variables" tab.\n`);
+  }
+  throw err;
+}
+export const config = parsedConfig;
 if (
   config.NODE_ENV === "production" &&
   (config.DEMO_DATE || !config.APP_ORIGIN.startsWith("https://"))
