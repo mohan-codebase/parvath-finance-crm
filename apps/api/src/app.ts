@@ -37,6 +37,12 @@ export const sessionStore = MongoStore.create({
 });
 export const isAllowedOrigin = (origin?: string, host?: string): boolean => {
   if (!origin) return true;
+  if (
+    config.NODE_ENV !== "production" &&
+    (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/.test(origin))
+  ) {
+    return true;
+  }
   return (
     origin === config.APP_ORIGIN ||
     origin === `https://${host}` ||

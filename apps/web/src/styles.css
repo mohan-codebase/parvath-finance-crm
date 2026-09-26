@@ -1,21 +1,33 @@
 @import "tailwindcss";
 @import "./dark.css";
+/* Brand palette from https://parvath-new.vercel.app/ */
 @theme {
-  --color-brand: #087e79;
-  --color-ink: #111936;
-  --color-muted: #59677b;
-  --color-page: #f5fafc;
+  --color-brand: #173f35;
+  --color-brand-hover: #315b4e;
+  --color-chart: #173f35;
+  --color-heading: #173f35;
+  --color-ink: #242522;
+  --color-muted: #4f4f46;
+  --color-subtle: #706e63;
+  --color-page: #f7f4ec;
+  --color-surface-soft: #f7f4ec;
+  --color-border: #cec6b2;
+  --color-brand-soft: #e9eee8;
+  --color-focus: #a98842;
+  --color-accent: #a98842;
+  --color-accent-ink: #7c5c20;
+  --color-accent-soft: #e4d2a6;
   --font-sans: Arial, Helvetica, sans-serif;
 }
 :root {
   font-family: Arial, Helvetica, sans-serif;
-  color: #111936;
-  background: #f5fafc;
+  color: var(--color-ink);
+  background: var(--color-page);
   font-synthesis: none;
   font-size: 14px;
-  --teal: #087e79;
-  --border: #e8eef1;
-  --muted: #59677b;
+  --teal: var(--color-brand);
+  --border: var(--color-border);
+  --muted: var(--color-muted);
   --sidebar: 232px;
 }
 * {
@@ -51,11 +63,11 @@ button,
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid #dce4e8;
+  border: 1px solid var(--color-border);
   background: #fff;
   border-radius: 6px;
   padding: 10px 15px;
-  color: #14213a;
+  color: var(--color-ink);
   font-size: 13px;
   line-height: 1.2;
   cursor: pointer;
@@ -66,8 +78,8 @@ button,
 }
 button:hover,
 .button:hover {
-  background: #f0f7f7;
-  border-color: #b6d3d0;
+  background: var(--color-brand-soft);
+  border-color: var(--color-focus);
 }
 button:disabled {
   opacity: 0.5;
@@ -81,7 +93,7 @@ button.primary,
 }
 button.primary:hover,
 .button.primary:hover {
-  background: #076c69;
+  background: var(--color-brand-hover);
 }
 button.danger,
 .button.danger {
@@ -99,7 +111,7 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid #64b8bb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 button.small,
@@ -114,7 +126,7 @@ button.text-link,
   min-height: 0;
   background: none;
   padding: 0;
-  color: #086e6a;
+  color: var(--color-brand);
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -126,6 +138,15 @@ h2,
 h3,
 p {
   margin: 0;
+}
+h1,
+h2,
+h3 {
+  color: var(--color-heading);
+}
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-ink);
 }
 h1 {
   font-size: 34px;
@@ -144,7 +165,7 @@ h3 {
   font-weight: 600;
 }
 p {
-  color: #526075;
+  color: var(--color-muted);
   line-height: 1.5;
 }
 small {
@@ -159,17 +180,17 @@ select,
 textarea {
   display: block;
   width: 100%;
-  border: 1px solid #d9e1e6;
+  border: 1px solid var(--color-border);
   border-radius: 5px;
   padding: 10px 12px;
   background: #fff;
   min-height: 40px;
-  color: #17213a;
+  color: var(--color-ink);
   outline-offset: 2px;
 }
 input::placeholder,
 textarea::placeholder {
-  color: #8390a1;
+  color: var(--color-subtle);
 }
 textarea {
   min-height: 90px;
@@ -214,18 +235,18 @@ table {
   font-size: 12px;
 }
 thead {
-  background: #f2f7fa;
+  background: var(--color-surface-soft);
 }
 th {
   font-weight: 500;
-  color: #24354c;
+  color: var(--color-ink);
   height: 40px;
   padding: 9px 10px;
   white-space: nowrap;
 }
 td {
   padding: 8px 10px;
-  border-bottom: 1px solid #edf0f3;
+  border-bottom: 1px solid var(--color-border);
   height: 50px;
   line-height: 1.45;
 }
@@ -238,7 +259,7 @@ tbody tr:last-child td {
   border-bottom: 0;
 }
 tbody tr:hover {
-  background: #fafdfd;
+  background: var(--color-surface-soft);
 }
 .table-scroll {
   overflow: auto;
@@ -325,8 +346,8 @@ tbody tr:hover {
   position: fixed;
   inset: 0 auto 0 0;
   width: var(--sidebar);
-  background: #f1f8fa;
-  border-right: 1px solid #e8f0f3;
+  background: var(--color-surface-soft);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   padding: 14px 15px 28px;
@@ -370,11 +391,11 @@ tbody tr:hover {
   gap: 17px;
   padding: 0 13px;
   border-radius: 7px;
-  color: #30415b;
+  color: var(--color-ink);
   font-size: 14px;
 }
 .sidebar nav a:hover {
-  background: #e1efed;
+  background: var(--color-brand-soft);
 }
 .sidebar nav a.active {
   background: var(--teal);
@@ -389,7 +410,7 @@ tbody tr:hover {
 }
 .botanical {
   height: 215px;
-  background: #dfedeb;
+  background: var(--color-brand-soft);
   border-radius: 12px 12px 0 0;
   position: relative;
   overflow: hidden;
@@ -412,23 +433,23 @@ tbody tr:hover {
   font-family: Georgia, serif;
   font-size: 18px;
   line-height: 1.23;
-  color: #153c48;
+  color: var(--color-heading);
   position: relative;
 }
 .botanical i {
   display: block;
   width: 37px;
   height: 1px;
-  background: #226266;
+  background: var(--color-heading);
   margin-top: 16px;
 }
 .sidebar-footer {
-  background: #e8f3f3;
+  background: var(--color-brand-soft);
   padding: 16px 20px 10px;
   border-radius: 0 0 10px 10px;
 }
 .sidebar-footer strong {
-  color: #1b5860;
+  color: var(--color-heading);
   font-size: 17px;
   display: block;
   white-space: nowrap;
@@ -450,8 +471,8 @@ tbody tr:hover {
   align-items: center;
   gap: 20px;
   padding: 0 24px;
-  background: #fbfdfe;
-  border-bottom: 1px solid #e7edf0;
+  background: var(--color-surface-soft);
+  border-bottom: 1px solid var(--color-border);
   position: relative;
   z-index: 20;
 }
@@ -461,13 +482,13 @@ tbody tr:hover {
   align-items: center;
   gap: 10px;
   position: relative;
-  border: 1px solid #e0e7eb;
-  background: #f1f6f9;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-soft);
   border-radius: 7px;
   width: 530px;
   max-width: 45%;
   padding: 0 15px;
-  color: #40516a;
+  color: var(--color-muted);
 }
 .global-search input,
 .global-search input:not([type]) {
@@ -497,7 +518,7 @@ tbody tr:hover {
 .notification-button {
   position: relative;
   padding: 6px 9px;
-  color: #25465a;
+  color: var(--color-heading);
 }
 .notification-button b {
   position: absolute;
@@ -565,7 +586,7 @@ tbody tr:hover {
   border-radius: 6px;
 }
 .search-results > a:hover {
-  background: #eaf7f4;
+  background: var(--color-brand-soft);
 }
 .search-results small {
   display: block;
@@ -588,8 +609,8 @@ tbody tr:hover {
   flex-shrink: 0;
 }
 .hue-1 {
-  background: #e1f5ef;
-  color: #117c74;
+  background: var(--color-brand-soft);
+  color: var(--color-heading);
 }
 .hue-2 {
   background: #eee8fa;
@@ -600,7 +621,7 @@ tbody tr:hover {
   color: #32669c;
 }
 .account .avatar {
-  background: #124d5a;
+  background: var(--color-brand);
   color: #fff;
   width: 37px;
   height: 37px;
@@ -611,8 +632,8 @@ tbody tr:hover {
   width: 124px;
   height: 124px;
   font-size: 40px;
-  color: #2c6b71;
-  background: #e1eeee;
+  color: var(--color-heading);
+  background: var(--color-brand-soft);
 }
 .page-content {
   padding: 20px 24px 30px;
@@ -665,9 +686,9 @@ tbody tr:hover {
   padding: 15px 18px;
   min-width: 0;
   min-height: 94px;
-  border: 1px solid #edf0f3;
+  border: 1px solid var(--color-border);
   border-radius: 9px;
-  background: #fcfefe;
+  background: var(--color-surface-soft);
   color: var(--ink);
   box-shadow: 0 2px 5px #27405a02;
 }
@@ -759,7 +780,7 @@ tbody tr:hover {
 }
 .tabs {
   display: flex;
-  border-bottom: 1px solid #edf0f2;
+  border-bottom: 1px solid var(--color-border);
   gap: 16px;
   overflow-x: auto;
   white-space: nowrap;
@@ -771,19 +792,19 @@ tbody tr:hover {
   border-radius: 0;
   padding: 12px 13px;
   position: relative;
-  color: #46546b;
+  color: var(--color-muted);
   min-height: 42px;
   font-size: 12px;
   flex-shrink: 0;
 }
 .tabs button.selected {
-  color: #066b65;
+  color: var(--color-brand);
   font-weight: 600;
 }
 .tabs button.selected:after {
   content: "";
   height: 3px;
-  background: #087e79;
+  background: var(--color-brand);
   position: absolute;
   bottom: 0;
   left: 0;
@@ -822,12 +843,12 @@ tbody tr:hover {
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  background: #f7f9fb;
-  border: 1px solid #e9edf1;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 0 12px;
   min-height: 37px;
-  color: #52657b;
+  color: var(--color-muted);
 }
 .search-input input,
 .search-input input:not([type]) {
@@ -842,7 +863,7 @@ tbody tr:hover {
 .filter-details {
   display: flex;
   gap: 20px;
-  background: #f5faf9;
+  background: var(--color-surface-soft);
   padding: 12px;
   margin-bottom: 12px;
   border-radius: 7px;
@@ -859,7 +880,7 @@ tbody tr:hover {
 }
 .person-cell strong {
   display: block;
-  color: #17213a;
+  color: var(--color-ink);
   font-size: 12px;
 }
 .person-cell small {
@@ -880,7 +901,7 @@ tbody tr:hover {
 .contact-actions a {
   min-height: 32px;
   padding: 6px 8px;
-  border: 1px solid #dfe6ea;
+  border: 1px solid var(--color-border);
   border-radius: 5px;
   background: #fff;
   font-size: 10px;
@@ -901,7 +922,7 @@ tbody tr:hover {
   gap: 12px;
   padding: 18px 3px 2px;
   font-size: 12px;
-  color: #47556b;
+  color: var(--color-muted);
 }
 .pagination > div {
   display: flex;
@@ -912,8 +933,8 @@ tbody tr:hover {
   padding: 7px;
   min-width: 32px;
   min-height: 34px;
-  border-color: #eef1f4;
-  background: #f7f9fb;
+  border-color: var(--color-border);
+  background: var(--color-surface-soft);
   font-size: 11px;
 }
 .pagination button.primary {
@@ -945,7 +966,7 @@ tbody tr:hover {
   align-items: center;
   gap: 12px;
   padding: 10px;
-  background: #e5f6f0;
+  background: var(--color-brand-soft);
   border-radius: 6px;
   margin-bottom: 10px;
 }
@@ -960,7 +981,7 @@ tbody tr:hover {
 }
 .greeting {
   height: 108px;
-  background: #fff7e9;
+  background: var(--color-accent-soft);
   border-radius: 11px;
   display: flex;
   align-items: center;
@@ -971,7 +992,7 @@ tbody tr:hover {
   margin-bottom: 20px;
 }
 .greeting > svg {
-  color: #ecb724;
+  color: var(--color-accent);
   flex-shrink: 0;
   stroke-width: 1.6;
 }
@@ -987,7 +1008,7 @@ tbody tr:hover {
   font-size: 15px;
   line-height: 1.5;
   margin: 0 40px 0 auto;
-  color: #454847;
+  color: var(--color-muted);
   text-align: center;
   flex-shrink: 0;
 }
@@ -1062,7 +1083,7 @@ tbody tr:hover {
 }
 .attention-panel .tabs button {
   padding: 7px 13px;
-  background: #f5f7f9;
+  background: var(--color-surface-soft);
   border-radius: 5px;
   min-height: 31px;
   font-size: 11px;
@@ -1072,7 +1093,7 @@ tbody tr:hover {
   align-items: center;
   gap: 13px;
   min-height: 111px;
-  border-bottom: 1px solid #f0f3f5;
+  border-bottom: 1px solid var(--color-border);
   padding: 11px 0;
 }
 .attention-row:last-child {
@@ -1097,7 +1118,7 @@ tbody tr:hover {
 .attention-person > span {
   font-size: 12px;
   line-height: 1.2;
-  color: #536078;
+  color: var(--color-muted);
 }
 .attention-person > span:last-child {
   font-size: 11px;
@@ -1131,24 +1152,6 @@ tbody tr:hover {
   flex-direction: column;
   gap: 14px;
 }
-.dashboard-secondary > .panel + .panel {
-  margin: 0;
-}
-.chart-summary {
-  font-size: 15px;
-  margin-bottom: 12px;
-}
-.chart-summary > span {
-  margin: 0 12px;
-}
-.chart-summary small {
-  font-size: 10px;
-  margin-left: 5px;
-}
-.renewal-chart {
-  height: 211px;
-  margin-left: -5px;
-}
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1170,14 +1173,14 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #eef3f5;
+  border: 1px solid var(--color-border);
 }
 .quick-grid.two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 .quick-grid.two > a {
-  border: 1px solid #eff2f4;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 8px;
 }
@@ -1191,18 +1194,18 @@ tbody tr:hover {
 }
 .relationship-banner {
   margin-top: 16px;
-  background: #eaf7f6;
+  background: var(--color-brand-soft);
   border-radius: 9px;
   padding: 18px;
   display: flex;
   align-items: center;
   gap: 18px;
   min-height: 80px;
-  color: #127467;
+  color: var(--color-brand);
 }
 .relationship-banner strong {
   font-size: 14px;
-  color: #142139;
+  color: var(--color-ink);
 }
 .relationship-banner p {
   font-size: 12px;
@@ -1252,7 +1255,7 @@ tbody tr:hover {
   justify-self: center;
 }
 .calendar-grid button:hover {
-  background: #e3f3ee;
+  background: var(--color-brand-soft);
 }
 .calendar-grid button.active {
   background: var(--teal);
@@ -1264,7 +1267,7 @@ tbody tr:hover {
 .day-summary {
   margin-top: 22px;
   padding-top: 17px;
-  border-top: 1px solid #eff3f5;
+  border-top: 1px solid var(--color-border);
 }
 .day-summary h3 {
   margin-bottom: 10px;
@@ -1286,7 +1289,7 @@ tbody tr:hover {
   align-items: flex-start;
   gap: 12px;
   padding: 13px 0;
-  border-bottom: 1px solid #f1f4f6;
+  border-bottom: 1px solid var(--color-border);
 }
 .activity-row:last-child {
   border: 0;
@@ -1306,7 +1309,7 @@ tbody tr:hover {
 }
 .activity-row time {
   font-size: 9px;
-  color: #8290a0;
+  color: var(--color-subtle);
   white-space: nowrap;
 }
 .dashboard-right > .panel:nth-child(2) {
@@ -1391,7 +1394,7 @@ tbody tr:hover {
   justify-content: space-between;
   gap: 8px;
   font-size: 10px;
-  color: #4a5870;
+  color: var(--color-muted);
   margin-top: 22px;
 }
 .calendar-legend span {
@@ -1424,7 +1427,7 @@ tbody tr:hover {
   align-items: center;
   gap: 10px;
   padding: 12px 0;
-  border-bottom: 1px solid #eff2f4;
+  border-bottom: 1px solid var(--color-border);
   font-size: 11px;
 }
 .schedule-row:last-child {
@@ -1460,13 +1463,13 @@ tbody tr:hover {
   align-items: flex-start;
   gap: 13px;
   padding: 17px;
-  background: #ecf7f8;
+  background: var(--color-surface-soft);
   border-radius: 8px;
   margin-top: 14px;
-  color: #d7a515;
+  color: var(--color-accent);
 }
 .tip strong {
-  color: #204957;
+  color: var(--color-heading);
   font-size: 14px;
 }
 .tip p {
@@ -1477,7 +1480,7 @@ tbody tr:hover {
   flex-shrink: 0;
 }
 .tip a {
-  color: #156a67;
+  color: var(--color-heading);
 }
 .tip .float-right {
   float: right;
@@ -1491,13 +1494,13 @@ tbody tr:hover {
 }
 .lead-column {
   border-radius: 8px;
-  background: #eaf5fd;
+  background: var(--color-surface-soft);
   padding: 9px;
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 685px;
-  border: 1px solid #e7f0f4;
+  border: 1px solid var(--color-border);
 }
 .lead-column header {
   padding: 4px 5px 12px;
@@ -1641,9 +1644,9 @@ tbody tr:hover {
   padding: 3px 6px;
 }
 .lead-tags > span:last-child {
-  background: #f0f4f8;
+  background: var(--color-surface-soft);
   border-radius: 4px;
-  color: #58657a;
+  color: var(--color-muted);
 }
 .drag-handle {
   position: absolute;
@@ -1653,7 +1656,7 @@ tbody tr:hover {
   border: 0;
   min-height: 20px;
   background: transparent;
-  color: #6b7e91;
+  color: var(--color-subtle);
   cursor: grab;
   touch-action: none;
 }
@@ -1662,7 +1665,7 @@ tbody tr:hover {
   box-shadow: 0 8px 25px #123f4030;
 }
 .drag-over {
-  outline: 2px dashed #087e79;
+  outline: 2px dashed var(--color-brand);
 }
 .add-lead {
   margin-bottom: 10px;
@@ -1717,7 +1720,7 @@ tbody tr:hover {
   font-size: 12px;
   justify-content: flex-start;
   margin-bottom: 10px;
-  color: #3c516b;
+  color: var(--color-muted);
   cursor: pointer;
 }
 .profile-top {
@@ -1783,20 +1786,20 @@ tbody tr:hover {
   justify-content: flex-end;
   gap: 40px;
   font-size: 11px;
-  color: #81909e;
+  color: var(--color-subtle);
 }
 .profile-header-actions > p > span {
-  border-left: 1px solid #e9eff1;
+  border-left: 1px solid var(--color-border);
   padding-left: 25px;
 }
 .profile-header-actions strong {
   display: block;
-  color: #19213a;
+  color: var(--color-ink);
   font-size: 12px;
   margin-top: 5px;
 }
 .profile-top .tabs {
-  background: #f0f4f9;
+  background: var(--color-surface-soft);
   border-radius: 6px;
   border: 0;
   gap: 25px;
@@ -1875,7 +1878,7 @@ tbody tr:hover {
   align-items: start;
 }
 .info-list dt {
-  color: #5a6880;
+  color: var(--color-muted);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1888,7 +1891,7 @@ tbody tr:hover {
   overflow-wrap: anywhere;
 }
 .info-list dt svg {
-  color: #526b85;
+  color: var(--color-muted);
   flex-shrink: 0;
 }
 .tag-list {
@@ -1897,7 +1900,7 @@ tbody tr:hover {
   flex-wrap: wrap;
 }
 .opportunities-panel {
-  background: #fff9e9;
+  background: var(--color-accent-soft);
 }
 .opportunities-panel > a {
   display: flex;
@@ -1907,7 +1910,7 @@ tbody tr:hover {
   padding: 5px 0;
 }
 .opportunities-panel > a svg {
-  color: #9aa7b2;
+  color: var(--color-subtle);
 }
 .small-table {
   font-size: 10px;
@@ -1929,7 +1932,7 @@ tbody tr:hover {
   align-items: flex-start;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f3f5;
+  border-bottom: 1px solid var(--color-border);
   min-height: 76px;
 }
 .profile-product:last-child {
@@ -1968,7 +1971,7 @@ tbody tr:hover {
   gap: 9px;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f3f5;
+  border-bottom: 1px solid var(--color-border);
 }
 .document-row > div {
   flex: 1;
@@ -1993,7 +1996,7 @@ tbody tr:hover {
   align-items: center;
   gap: 15px;
   padding: 17px 5px;
-  border-bottom: 1px solid #edf1f3;
+  border-bottom: 1px solid var(--color-border);
   min-height: 68px;
 }
 .record-row > span:not(.badge):not(.avatar):not(.product-icon) {
@@ -2049,7 +2052,7 @@ tbody tr:hover {
   padding: 0;
   border: 0;
   background: none;
-  color: #5c677b;
+  color: var(--color-muted);
   white-space: nowrap;
   justify-content: flex-start;
   font-size: 13px;
@@ -2059,7 +2062,7 @@ tbody tr:hover {
   content: "";
   flex: 1;
   height: 1px;
-  background: #e3e8ed;
+  background: var(--color-border);
   min-width: 20px;
   margin-left: 5px;
 }
@@ -2072,13 +2075,13 @@ tbody tr:hover {
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: #eff3f7;
+  background: var(--color-surface-soft);
   border-radius: 50%;
   font-size: 17px;
   flex-shrink: 0;
 }
 .stepper > button.current {
-  color: #18243a;
+  color: var(--color-ink);
 }
 .stepper > button.current > span,
 .stepper > button.done > span {
@@ -2136,7 +2139,7 @@ tbody tr:hover {
   justify-content: space-between;
 }
 .photo-panel {
-  background: #f7fcfd;
+  background: var(--color-surface-soft);
   text-align: center;
   padding: 25px 15px 14px;
 }
@@ -2144,8 +2147,8 @@ tbody tr:hover {
   width: 103px;
   height: 103px;
   border-radius: 50%;
-  background: #dfe8ed;
-  color: #8ba0ae;
+  background: var(--color-border);
+  color: var(--color-subtle);
   margin: 0 auto 17px;
   position: relative;
   display: flex;
@@ -2179,13 +2182,13 @@ tbody tr:hover {
   margin: 5px 0 12px;
 }
 .photo-panel > button {
-  color: #155f65;
+  color: var(--color-heading);
 }
 .security-note {
   display: flex;
   align-items: center;
   gap: 13px;
-  background: #e6f7f5;
+  background: var(--color-brand-soft);
   padding: 16px;
   margin-top: 22px;
   text-align: left;
@@ -2193,7 +2196,7 @@ tbody tr:hover {
 }
 .security-note strong {
   font-size: 13px;
-  color: #22525b;
+  color: var(--color-heading);
 }
 .security-note p {
   font-size: 12px;
@@ -2209,7 +2212,7 @@ tbody tr:hover {
   align-items: center;
   gap: 12px;
   padding: 9px;
-  border: 1px solid #eff2f4;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   margin-top: 8px;
   text-align: left;
@@ -2238,7 +2241,7 @@ tbody tr:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #e9eff2;
+  border-top: 1px solid var(--color-border);
   padding: 16px 0;
   margin-top: 14px;
   gap: 12px;
@@ -2253,7 +2256,7 @@ tbody tr:hover {
 }
 .draft-notice {
   padding: 10px 15px;
-  background: #e9f7f2;
+  background: var(--color-brand-soft);
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
@@ -2272,7 +2275,7 @@ tbody tr:hover {
 }
 .review-grid span {
   display: block;
-  color: #748394;
+  color: var(--color-subtle);
   text-transform: capitalize;
   font-size: 12px;
   margin-bottom: 7px;
@@ -2368,9 +2371,9 @@ tbody tr:hover {
 }
 .large-note {
   padding: 18px;
-  background: #f2f8f8;
+  background: var(--color-surface-soft);
   border-radius: 8px;
-  color: #203a44;
+  color: var(--color-heading);
 }
 .export-grid {
   display: grid;
@@ -2391,7 +2394,7 @@ tbody tr:hover {
   padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fbfdfe;
+  background: var(--color-surface-soft);
 }
 .export-card .export-info {
   display: flex;
@@ -2432,7 +2435,7 @@ tbody tr:hover {
 }
 .definitions dd {
   margin: 0;
-  color: #526078;
+  color: var(--color-muted);
 }
 .inline-form {
   display: flex;
@@ -2458,7 +2461,7 @@ tbody tr:hover {
   border-right: 0;
 }
 .notification-row.unread {
-  background: #f0faf7;
+  background: var(--color-brand-soft);
 }
 .consent-section {
   margin-top: 25px;
@@ -2469,15 +2472,15 @@ tbody tr:hover {
   margin-top: 20px;
 }
 .upload-zone {
-  border: 1px dashed #94c4bd;
+  border: 1px dashed var(--color-focus);
   border-radius: 9px;
   min-height: 170px;
   align-items: center;
   justify-content: center;
   margin-top: 20px;
   padding: 20px;
-  color: #277567;
-  background: #f5fbf9;
+  color: var(--color-brand);
+  background: var(--color-surface-soft);
 }
 .upload-zone input {
   max-width: 350px;
@@ -2488,14 +2491,14 @@ tbody tr:hover {
   justify-content: center;
   gap: 12px;
   min-height: 250px;
-  color: #5b7180;
+  color: var(--color-muted);
   font-size: 14px;
 }
 .spinner {
   width: 22px;
   height: 22px;
-  border: 2px solid #bcded6;
-  border-top-color: #0c8272;
+  border: 2px solid var(--color-focus);
+  border-top-color: var(--color-brand);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -2508,7 +2511,7 @@ tbody tr:hover {
 .empty {
   text-align: center;
   padding: 45px 20px;
-  color: #65788a;
+  color: var(--color-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2524,10 +2527,10 @@ tbody tr:hover {
   width: min(560px, calc(100% - 30px));
   max-height: calc(100dvh - 40px);
   padding: 23px;
-  border: 1px solid #dfe8e8;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   background: #fff;
-  color: #15213a;
+  color: var(--color-ink);
   box-shadow: 0 20px 100px #173b4b25;
   overflow: auto;
   margin: auto;
@@ -2566,7 +2569,7 @@ tbody tr:hover {
   right: 25px;
   z-index: 100;
   max-width: calc(100vw - 35px);
-  background: #153e45;
+  background: var(--color-heading);
   color: #fff;
   padding: 15px 18px;
   border-radius: 9px;
@@ -2588,10 +2591,10 @@ tbody tr:hover {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: #f8fcfc;
+  background: var(--color-page);
 }
 .auth-brand {
-  background: #edf7f3;
+  background: var(--color-surface-soft);
   padding: 70px 15%;
   position: relative;
   overflow: hidden;
@@ -2620,7 +2623,7 @@ tbody tr:hover {
   font-size: 40px;
   line-height: 1.3;
   margin-top: 60px;
-  color: #134b4c;
+  color: var(--color-heading);
 }
 .auth-brand > p {
   margin-top: 22px;
@@ -3843,9 +3846,6 @@ tbody tr:hover {
   .attention-row {
     min-height: 111px;
   }
-  .renewal-chart {
-    height: 188px;
-  }
   .dashboard-secondary .quick-grid {
     row-gap: 16px;
   }
@@ -4148,7 +4148,7 @@ tbody tr:hover {
 .input-with-icon > svg {
   position: absolute;
   left: 13px;
-  color: #526985;
+  color: var(--color-muted);
   pointer-events: none;
 }
 .input-with-icon input:not([type="radio"]):not([type="checkbox"]) {

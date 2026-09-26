@@ -1,15 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
   Sun,
   Lightbulb,
   Cake,
@@ -196,48 +187,6 @@ export default function Dashboard() {
             )}
           </Panel>
           <div className="dashboard-secondary">
-            <Panel
-              title="Renewals – Next 30 Days"
-              action={
-                <Link className="text-link" to="/renewals?range=Next+30+Days">
-                  View All <ArrowRight size={14} />
-                </Link>
-              }
-            >
-              <p className="chart-summary">
-                {d.renewalsDue} events <span>•</span>{" "}
-                {rupees(d.premiumDueMinor)} <small>premiums due</small>
-              </p>
-              <div className="renewal-chart">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={d.bins}>
-                    <CartesianGrid vertical={false} stroke="#edf0f2" />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      width={25}
-                      allowDecimals={false}
-                      tick={{ fontSize: 10 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip />
-                    <Bar
-                      dataKey="count"
-                      name="Scheduled events"
-                      fill="#159991"
-                      isAnimationActive={false}
-                      maxBarSize={27}
-                      radius={[2, 2, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Panel>
             <Panel title="Quick Actions">
               <QuickActions />
             </Panel>
