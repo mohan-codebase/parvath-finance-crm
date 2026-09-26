@@ -82,6 +82,10 @@ export const contactHistoryFilter = {
 };
 export const flattenClient = (c: any) => ({
   ...c,
+  onboardingProfile: c.onboardingJson
+    ? JSON.parse(c.onboardingJson)
+    : undefined,
+  onboardingJson: undefined,
   ...c.contact,
   id: c.id,
   contactId: c.contactId,

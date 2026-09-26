@@ -52,6 +52,7 @@ export default function ClientProfile() {
   if (q.isPending) return <Loading />;
   if (q.error) return <ErrorState error={q.error} />;
   const c = q.data.data;
+  const onboarding = c.onboardingProfile || {};
   const edit = (
     <Link className="button small" to={`/clients/${id}/edit`}>
       <Pencil size={13} />
@@ -457,6 +458,104 @@ export default function ClientProfile() {
                 </Panel>
               </div>
             </div>
+            {Object.keys(onboarding).length > 0 && (
+              <Panel title="Onboarding Details" action={edit}>
+                <div className="onboard-profile-details">
+                  <div>
+                    <h3>Family & Professional</h3>
+                    <dl className="info-list">
+                      {[
+                        ["Marital Status", onboarding.maritalStatus],
+                        ["Spouse Name", onboarding.spouseName],
+                        [
+                          "Children",
+                          onboarding.children
+                            ?.map((child: any) => child.name)
+                            .filter(Boolean)
+                            .join(", "),
+                        ],
+                        ["Dependents", onboarding.dependents],
+                        ["Company", onboarding.companyName],
+                        ["Designation", onboarding.designation],
+                        ["Industry", onboarding.professionalIndustry],
+                        ["Experience", onboarding.experience],
+                      ].map(([label, value]) => (
+                        <div key={label}>
+                          <dt>{label}</dt>
+                          <dd>{value || "Not provided"}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                  <div>
+                    <h3>Goals & Preferences</h3>
+                    <dl className="info-list">
+                      {[
+                        [
+                          "Financial Goals",
+                          onboarding.financialGoals?.join(", "),
+                        ],
+                        ["Investment Horizon", onboarding.investmentHorizon],
+                        ["Monthly Savings", onboarding.monthlySavings],
+                        ["Total Savings", onboarding.totalSavings],
+                        [
+                          "Contact Channels",
+                          onboarding.communicationChannels?.join(", "),
+                        ],
+                        ["Preferred Time", onboarding.preferredTime],
+                        ["Best Day", onboarding.bestDay],
+                        [
+                          "Engagement Topics",
+                          onboarding.engagementTopics?.join(", "),
+                        ],
+                        ["Interests", onboarding.interests?.join(", ")],
+                        ["Language", onboarding.language],
+                      ].map(([label, value]) => (
+                        <div key={label}>
+                          <dt>{label}</dt>
+                          <dd>{value || "Not provided"}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                </div>
+                {(
+                  [
+                    [
+                      "Reported Insurance Policies",
+                      onboarding.policies,
+                      "name",
+                      "provider",
+                    ],
+                    ["Reported Loans", onboarding.loans, "type", "bank"],
+                    [
+                      "Reported Investments",
+                      onboarding.investments,
+                      "type",
+                      "provider",
+                    ],
+                  ] as const
+                ).map(([title, rows, main, secondary]) =>
+                  rows?.length ? (
+                    <div className="onboard-profile-list" key={title}>
+                      <h3>{title}</h3>
+                      <p className="muted">
+                        Recorded during onboarding. Add a linked product to
+                        track financial events.
+                      </p>
+                      {rows.map((row: any, index: number) => (
+                        <div key={index}>
+                          <strong>{row[main] || "Untitled"}</strong>
+                          <span>
+                            {row[secondary] || "Provider not entered"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null,
+                )}
+              </Panel>
+            )}
           </div>
           <aside className="profile-right">
             <Panel title="Quick Actions">
@@ -580,7 +679,8 @@ export default function ClientProfile() {
       {showDelete && (
         <Modal title="Delete Client" onClose={() => setShowDelete(false)}>
           <p style={{ margin: "0 0 14px" }}>
-            Are you sure you want to permanently delete <strong>{c.name}</strong>?
+            Are you sure you want to permanently delete{" "}
+            <strong>{c.name}</strong>?
           </p>
           <p
             className="muted"

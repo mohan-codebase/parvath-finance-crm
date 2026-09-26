@@ -43,6 +43,10 @@ export function NewRecord({
     write = useWrite(),
     toast = useToast();
   const clients = useData("/clients?limit=100"),
+    selectedClient = useData(
+      "/clients/" + params.get("clientId"),
+      !!params.get("clientId"),
+    ),
     members = useData("/members"),
     catalogue = useData("/catalogue");
   const [clientId, setClientId] = useState(params.get("clientId") || ""),
@@ -59,6 +63,15 @@ export function NewRecord({
       "/renewals?clientId=" + clientId,
       !!clientId && type === "followups",
     );
+  const clientOptionReady =
+    !clientId ||
+    clients.data?.data.some((c: any) => c.id === clientId) ||
+    selectedClient.data?.data?.id === clientId;
+  const formReady =
+    clientOptionReady &&
+    !clients.isPending &&
+    !members.isPending &&
+    (type !== "products" || !catalogue.isPending);
   const title =
     type === "leads"
       ? "Add Lead"
@@ -122,10 +135,19 @@ export function NewRecord({
               Client *
               <select
                 required
-                value={clientId}
+                value={clientOptionReady ? clientId : ""}
                 onChange={(e) => setClientId(e.target.value)}
               >
                 <option value="">Select client</option>
+                {selectedClient.data?.data &&
+                  !clients.data?.data.some(
+                    (c: any) => c.id === selectedClient.data.data.id,
+                  ) && (
+                    <option value={selectedClient.data.data.id}>
+                      {selectedClient.data.data.name} ·{" "}
+                      {selectedClient.data.data.phone}
+                    </option>
+                  )}
                 {clients.data?.data.map((c: any) => (
                   <option key={c.id} value={c.id}>
                     {c.name} · {c.phone}
@@ -301,7 +323,13 @@ export function NewRecord({
             <Link className="button" to={"/" + type}>
               Cancel
             </Link>
-            <Submit busy={write.isPending}>{title}</Submit>
+            {formReady ? (
+              <Submit busy={write.isPending}>{title}</Submit>
+            ) : (
+              <button className="primary" type="button" disabled>
+                Loading client…
+              </button>
+            )}
           </div>
         </form>
       </Panel>

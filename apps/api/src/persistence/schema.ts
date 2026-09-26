@@ -568,6 +568,10 @@ export const schema: Record<ModelName, ModelSchema> = {
         type: "String",
         nullable: true,
       },
+      onboardingJson: {
+        type: "String",
+        nullable: true,
+      },
       version: {
         type: "Int",
         nullable: false,

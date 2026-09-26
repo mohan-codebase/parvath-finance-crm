@@ -1,10 +1,10 @@
 {
-  "date": "2026-09-18T11:51:11.846Z",
+  "date": "2026-09-26T08:25:53.526Z",
   "checks": [
     "Sign-in and authenticated navigation",
     "Required field validation",
     "Draft recovery",
-    "Five-step individual creation persists",
+    "Five-step individual creation and success actions persist",
     "Profile editing persists",
     "Accessible lead movement and sales conversion",
     "Payment, renewal confirmation and recurring history",

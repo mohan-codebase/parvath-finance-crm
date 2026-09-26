@@ -5,12 +5,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Briefcase,
   CalendarDays,
-  Camera,
   ChevronRight,
   Copy,
   Mail,
   Phone,
-  ShieldCheck,
   Upload,
   UserPlus,
   UserRound,
@@ -31,6 +29,13 @@ import {
   useAuth,
   useToast,
 } from "./components";
+import {
+  AdditionalDetails,
+  FinancialProfile,
+  Preferences,
+  ReviewSummary,
+  type OnboardingProfile,
+} from "./ClientOnboardingSections";
 const steps = [
   "Basic Information",
   "Additional Details",
@@ -51,7 +56,11 @@ export default function ClientForm() {
     [duplicate, setDuplicate] = useState(false),
     [duplicateReason, setDuplicateReason] = useState(""),
     [copy, setCopy] = useState(false),
-    [recovered, setRecovered] = useState(false);
+    [recovered, setRecovered] = useState(false),
+    [profile, setProfile] = useState<OnboardingProfile>({
+      sameAddress: true,
+      communicationChannels: ["WhatsApp"],
+    });
   const photoInput = useRef<HTMLInputElement>(null);
   const form = useForm<ClientInput>({
     resolver: zodResolver(clientSchema) as any,
@@ -62,7 +71,7 @@ export default function ClientForm() {
       kind: "Individual",
       source: "Direct",
       gender: "",
-      preferredContact: "",
+      preferredContact: "WhatsApp",
       allowDuplicate: false,
     },
   });
@@ -85,11 +94,13 @@ export default function ClientForm() {
         registrationNumber: c.business?.registrationNumber || "",
         industry: c.business?.industry || "",
       });
+      setProfile(c.onboardingProfile || { sameAddress: true });
     } else if (!id) {
       try {
         const d = JSON.parse(localStorage.getItem(draftKey) || "null");
         if (d) {
-          reset(d);
+          reset(d.form || d);
+          if (d.profile) setProfile(d.profile);
           setRecovered(true);
         }
       } catch {
@@ -99,15 +110,26 @@ export default function ClientForm() {
   }, [existing.data, id, reset, draftKey]);
   useEffect(() => {
     if (id) return;
-    const s = watch((v) => localStorage.setItem(draftKey, JSON.stringify(v)));
+    localStorage.setItem(
+      draftKey,
+      JSON.stringify({ form: form.getValues(), profile }),
+    );
+    const s = watch((v) =>
+      localStorage.setItem(draftKey, JSON.stringify({ form: v, profile })),
+    );
     return () => s.unsubscribe();
-  }, [watch, draftKey, id]);
+  }, [watch, draftKey, id, profile]);
   const submit = handleSubmit(async (values) => {
     try {
       const result = await write.mutateAsync({
         path: id ? "/clients/" + id : "/clients",
         method: id ? "PATCH" : "POST",
-        body: { ...values, allowDuplicate: duplicate, duplicateReason },
+        body: {
+          ...values,
+          onboardingProfile: profile,
+          allowDuplicate: duplicate,
+          duplicateReason,
+        },
       });
       localStorage.removeItem(draftKey);
       if (photo) {
@@ -124,7 +146,11 @@ export default function ClientForm() {
         }
       }
       toast(id ? "Client details updated" : "Client created successfully");
-      navigate("/clients/" + result.data.id);
+      navigate(
+        id
+          ? "/clients/" + result.data.id
+          : "/clients/" + result.data.id + "/success",
+      );
     } catch (e) {
       if ((e as any).status === 409 && Array.isArray((e as any).details))
         setDuplicate(true);
@@ -212,9 +238,12 @@ export default function ClientForm() {
         ))}
       </div>
       <form onSubmit={submit}>
-        <div className="onboarding-layout">
+        <div className={`onboarding-layout step-${step}`}>
           <Panel className="onboarding-main">
-            <div className="panel-heading">
+            <div
+              className="panel-heading"
+              style={step === 4 ? { display: "none" } : undefined}
+            >
               <div>
                 <h2>{steps[step]}</h2>
                 <p>
@@ -306,133 +335,88 @@ export default function ClientForm() {
                     {["WhatsApp", "Call", "Email"].map((m) => (
                       <label key={m}>
                         <input
-                          type="radio"
-                          {...register("preferredContact")}
-                          value={m}
+                          type="checkbox"
+                          checked={(
+                            profile.communicationChannels || []
+                          ).includes(m === "Call" ? "Phone Call" : m)}
+                          onChange={(e) => {
+                            const value = m === "Call" ? "Phone Call" : m;
+                            const current = profile.communicationChannels || [];
+                            const channels = e.target.checked
+                              ? [...current, value]
+                              : current.filter((c) => c !== value);
+                            setProfile({
+                              ...profile,
+                              communicationChannels: channels,
+                            });
+                            setValue(
+                              "preferredContact",
+                              channels[0] === "Phone Call"
+                                ? "Call"
+                                : channels[0] || "",
+                            );
+                          }}
                         />
                         {m}
                       </label>
                     ))}
                   </div>
                 </fieldset>
-                <label className="field full">
-                  Address
-                  <textarea
-                    {...register("address")}
-                    placeholder="Enter complete address"
-                  />
-                </label>
+                <div className="onboard-photo-inline">
+                  <div className="onboard-avatar">
+                    {watch("name")
+                      ?.trim()
+                      .split(/\s+/)
+                      .map((s) => s[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase() || <UserRound size={28} />}
+                  </div>
+                  <div>
+                    <strong>Profile Photo</strong>
+                    <button
+                      type="button"
+                      onClick={() => photoInput.current?.click()}
+                    >
+                      <Upload size={16} /> {photo ? photo.name : "Upload Photo"}
+                    </button>
+                    <small>JPG or PNG, maximum 10 MB</small>
+                    <input
+                      ref={photoInput}
+                      hidden
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      onChange={(e) => setPhoto(e.target.files?.[0])}
+                    />
+                  </div>
+                </div>
               </div>
             ) : step === 1 ? (
-              <div className="form-grid">
-                {field("city", "City", "Enter city")}
-                {field("state", "State", "Enter state")}
-                <label className="field">
-                  Source
-                  <select {...register("source")}>
-                    {[
-                      "Direct",
-                      "Referral",
-                      "Website",
-                      "Walk-in",
-                      "Campaign",
-                    ].map((s) => (
-                      <option key={s}>{s}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field">
-                  Tags
-                  <input
-                    defaultValue={watch("tags")?.join(", ")}
-                    onChange={(e) =>
-                      setValue(
-                        "tags",
-                        e.target.value
-                          .split(",")
-                          .map((t) => t.trim())
-                          .filter(Boolean),
-                      )
-                    }
-                    placeholder="Family, Insurance, Investment"
-                  />
-                </label>
-                <label className="full">
-                  Notes
-                  <textarea
-                    {...register("notesText")}
-                    placeholder="Useful context for the relationship"
-                  />
-                </label>
-              </div>
+              <AdditionalDetails
+                profile={profile}
+                setProfile={setProfile}
+                form={form}
+              />
             ) : step === 2 ? (
-              <div className="form-grid">
-                {field(
-                  "annualIncome",
-                  "Annual Income / Turnover",
-                  "e.g. ₹10–25 Lakhs",
-                )}
-                <label>
-                  Risk Profile
-                  <select {...register("riskProfile")}>
-                    <option value="">Not assessed</option>
-                    {["Conservative", "Moderate", "Growth"].map((v) => (
-                      <option key={v}>{v}</option>
-                    ))}
-                  </select>
-                </label>
-                {field(
-                  "investmentInterest",
-                  "Investment Interests",
-                  "e.g. Bonds, Mutual Funds",
-                )}
-                {field("loanInterest", "Loan Interests", "e.g. Home Loan")}
-              </div>
+              <FinancialProfile
+                profile={profile}
+                setProfile={setProfile}
+                form={form}
+              />
             ) : step === 3 ? (
-              <>
-                <div className="form-grid">
-                  <label>
-                    Preferred Contact Method
-                    <select {...register("preferredContact")}>
-                      <option value="">Not provided</option>
-                      <option>WhatsApp</option>
-                      <option>Call</option>
-                      <option>Email</option>
-                    </select>
-                  </label>
-                </div>
-                <div className="tip">
-                  <ShieldCheck />
-                  <p>
-                    A preferred channel is not consent to automated marketing.
-                    Record consent and its evidence separately from the client
-                    profile or Engagement screen.
-                  </p>
-                </div>
-              </>
+              <Preferences
+                profile={profile}
+                setProfile={setProfile}
+                form={form}
+              />
             ) : (
-              <div className="review-grid">
-                {Object.entries(watch())
-                  .filter(
-                    ([k, v]) =>
-                      ![
-                        "version",
-                        "allowDuplicate",
-                        "duplicateReason",
-                      ].includes(k) &&
-                      v &&
-                      typeof v !== "object",
-                  )
-                  .map(([k, v]) => (
-                    <div key={k}>
-                      <span>{k.replace(/([A-Z])/g, " $1")}</span>
-                      <strong>{String(v)}</strong>
-                    </div>
-                  ))}
-                <button type="button" onClick={() => setStep(0)}>
-                  Correct details
-                </button>
-              </div>
+              <ReviewSummary
+                profile={profile}
+                setProfile={setProfile}
+                form={form}
+                goTo={setStep}
+                editing={!!id}
+              />
             )}
             <FormError error={write.error} />
             {duplicate && (
@@ -454,91 +438,25 @@ export default function ClientForm() {
               </div>
             )}
           </Panel>
-          <aside>
-            <Panel className="photo-panel">
-              <div className="photo-placeholder">
-                {photo ? (
-                  <img
-                    src={URL.createObjectURL(photo)}
-                    alt="Selected profile photo"
-                  />
-                ) : (
-                  <UserRound size={64} />
-                )}
-                <span>
-                  <Camera size={17} />
-                </span>
-              </div>
-              <h3>Add Profile Photo</h3>
-              <p>Helps you recognize your client easily.</p>
-              <button type="button" onClick={() => photoInput.current?.click()}>
-                <Upload size={17} />
-                Upload Photo
-              </button>
-              <input
-                ref={photoInput}
-                hidden
-                type="file"
-                accept="image/jpeg,image/png"
-                onChange={(e) => setPhoto(e.target.files?.[0])}
-              />
-              <div className="security-note">
-                <span className="circle-icon mint">
-                  <ShieldCheck size={25} />
-                </span>
-                <div>
-                  <strong>Client data is safe and secure</strong>
-                  <p>
-                    Files remain private and are quarantined until scanning
-                    completes.
-                  </p>
-                </div>
-              </div>
-            </Panel>
-            <Panel title="Quick Add">
-              <Link className="quick-add-row" to="/clients/import">
-                <span className="product-icon mint">
-                  <UserPlus />
-                </span>
-                <div>
-                  <strong>Import from Contacts</strong>
-                  <small>Upload a CSV exported from your contacts</small>
-                </div>
-                <ChevronRight size={16} />
-              </Link>
-              <button
-                className="quick-add-row"
-                type="button"
-                onClick={async () => {
-                  if (await trigger(["name", "phone", "email"])) setStep(4);
-                }}
-              >
-                <span className="product-icon mint">
-                  <UserRound />
-                </span>
-                <div>
-                  <strong>Add with Minimal Details</strong>
-                  <small>You can update the rest later</small>
-                </div>
-                <ChevronRight size={16} />
-              </button>
-              <button
-                className="quick-add-row"
-                type="button"
-                onClick={() => setCopy(true)}
-              >
-                <span className="product-icon mint">
-                  <Copy />
-                </span>
-                <div>
-                  <strong>Duplicate Existing Client</strong>
-                  <small>Copy reviewed contact fields only</small>
-                </div>
-                <ChevronRight size={16} />
-              </button>
-            </Panel>
-          </aside>
         </div>
+        {step === 0 && (
+          <div className="onboard-shortcuts">
+            <button
+              type="button"
+              onClick={async () => {
+                if (await trigger(["name", "phone", "email"])) setStep(4);
+              }}
+            >
+              Add with Minimal Details
+            </button>
+            <button type="button" onClick={() => setCopy(true)}>
+              <Copy size={14} /> Duplicate Existing Client
+            </button>
+            <Link to="/clients/import">
+              <UserPlus size={14} /> Import from Contacts
+            </Link>
+          </div>
+        )}
         <div className="form-footer">
           <Link className="button" to="/clients">
             Cancel
@@ -580,6 +498,7 @@ export default function ClientForm() {
               source: "Direct",
               preferredContact: "",
             });
+            setProfile({ sameAddress: true, communicationChannels: [] });
             setCopy(false);
             setStep(0);
             toast(

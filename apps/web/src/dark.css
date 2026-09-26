@@ -1099,3 +1099,20 @@ html.dark .auth-card h1 {
 html.dark .auth-card > p {
   color: #a4b3a9;
 }
+
+html.dark .onboard-section,
+html.dark .onboard-review-identity,
+html.dark .onboard-success-card { background: #14251d; border-color: #2d4436; color: #f7f4ec; }
+html.dark .onboard-section h3,
+html.dark .onboard-section h4,
+html.dark .onboard-summary dd,
+html.dark .onboard-success-card h1 { color: #f7f4ec; }
+html.dark .onboard-field,
+html.dark .onboard-summary dt,
+html.dark .onboard-review-identity p,
+html.dark .onboard-success-card > p { color: #b7c8ba; }
+html.dark .onboard-success-page { background: #0d1c18; }
+html.dark .onboard-success-actions a { border-color: #2d4436; color: #f7f4ec; }
+html.dark .onboard-photo-inline button,
+html.dark .onboard-add,
+html.dark .onboard-edit { background: #1d342b; border-color: #2d4436; color: #8ed7ca; }

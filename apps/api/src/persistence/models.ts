@@ -101,6 +101,7 @@ export interface Client {
   loanInterest: string | null;
   preferredContact: string | null;
   notesText: string | null;
+  onboardingJson: string | null;
   version: number;
   createdAt: Date;
   updatedAt: Date;

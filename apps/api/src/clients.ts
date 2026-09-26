@@ -45,6 +45,7 @@ export function clientData(v: z.output<typeof clientSchema>) {
     loanInterest,
     preferredContact,
     notesText,
+    onboardingProfile,
   } = v;
   return {
     contact: {
@@ -67,6 +68,9 @@ export function clientData(v: z.output<typeof clientSchema>) {
       loanInterest,
       preferredContact,
       notesText,
+      onboardingJson: onboardingProfile
+        ? JSON.stringify(onboardingProfile)
+        : null,
     },
   };
 }
@@ -93,7 +97,7 @@ export async function createClient(
   owner: string,
 ) {
   const d = clientData(v);
-  return tx.client.create({
+  const created = await tx.client.create({
     data: {
       organization: { connect: { id: org } },
       ownerId: owner,
@@ -125,6 +129,21 @@ export async function createClient(
     },
     include: clientInclude,
   });
+  const followup = v.onboardingProfile?.initialFollowup;
+  if (followup?.enabled && followup.date && followup.notes) {
+    await tx.followUp.create({
+      data: {
+        organizationId: org,
+        clientId: created.id,
+        ownerId: owner,
+        dueAt: new Date(`${followup.date}T10:00:00+05:30`),
+        channel: followup.channel || "Call",
+        priority: "Normal",
+        notes: followup.notes,
+      },
+    });
+  }
+  return created;
 }
 clients.get("/", async (req, res) => {
   const q = z

@@ -151,6 +151,57 @@ describe("Authenticated MongoDB workflows", () => {
       (await db.contact.findUnique({ where: { id: client.contactId } }))?.email,
     ).toBe("test@example.test");
   });
+  it("saves onboarding details and schedules the optional first follow-up", async () => {
+    const created = await write("/clients", {
+      name: "Onboarding Example",
+      phone: "+919000088891",
+      kind: "Individual",
+      address: "18 Cross Street",
+      city: "Chennai",
+      annualIncome: "₹25–50 Lakhs",
+      onboardingProfile: {
+        maritalStatus: "Married",
+        spouseName: "Synthetic Spouse",
+        children: [
+          {
+            name: "Synthetic Child",
+            dob: "2018-04-14",
+            relationship: "Daughter",
+          },
+        ],
+        financialGoals: ["Retirement Planning"],
+        policies: [
+          {
+            type: "Life",
+            provider: "Example Provider",
+            name: "Example Policy",
+            sumAssured: "₹50,00,000",
+            renewalDate: "2027-06-12",
+          },
+        ],
+        communicationChannels: ["WhatsApp", "Phone Call"],
+        initialFollowup: {
+          enabled: true,
+          date: "2026-09-10",
+          channel: "Call",
+          notes: "Discuss protection options",
+        },
+      },
+    });
+    expect(created.status, created.text).toBe(201);
+    const id = created.body.data.id;
+    const detail = await admin.get(`/api/clients/${id}`);
+    expect(detail.status).toBe(200);
+    expect(detail.body.data.onboardingProfile.children[0].name).toBe(
+      "Synthetic Child",
+    );
+    expect(detail.body.data.onboardingProfile.policies[0].name).toBe(
+      "Example Policy",
+    );
+    const followups = await db.followUp.findMany({ where: { clientId: id } });
+    expect(followups).toHaveLength(1);
+    expect(followups[0].notes).toBe("Discuss protection options");
+  });
   it("detects duplicates and requires reviewed reason", async () => {
     expect(
       (await write("/clients", { name: "Family Member", phone: client.phone }))

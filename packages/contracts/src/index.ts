@@ -30,6 +30,107 @@ const optionalText = z
   .optional()
   .nullable()
   .transform((v) => v ?? undefined);
+const onboardingText = z.string().trim().max(1000).optional();
+const onboardingDate = businessDate.or(z.literal("")).optional();
+export const onboardingProfileSchema = z.object({
+  maritalStatus: onboardingText,
+  spouseName: onboardingText,
+  spouseDob: onboardingDate,
+  weddingDate: onboardingDate,
+  children: z
+    .array(
+      z.object({
+        name: onboardingText,
+        dob: onboardingDate,
+        relationship: onboardingText,
+      }),
+    )
+    .max(20)
+    .optional(),
+  dependents: onboardingText,
+  sameAddress: z.boolean().optional(),
+  permanentAddress: onboardingText,
+  pinCode: onboardingText,
+  companyName: onboardingText,
+  designation: onboardingText,
+  professionalIndustry: onboardingText,
+  experience: onboardingText,
+  referredBy: onboardingText,
+  clientCategory: onboardingText,
+  clientSince: onboardingDate,
+  monthlySavings: onboardingText,
+  totalSavings: onboardingText,
+  investmentHorizon: onboardingText,
+  financialGoals: z.array(z.string().max(80)).max(20).optional(),
+  policies: z
+    .array(
+      z.object({
+        type: onboardingText,
+        provider: onboardingText,
+        name: onboardingText,
+        sumAssured: onboardingText,
+        renewalDate: onboardingDate,
+      }),
+    )
+    .max(30)
+    .optional(),
+  loans: z
+    .array(
+      z.object({
+        type: onboardingText,
+        bank: onboardingText,
+        amount: onboardingText,
+        outstanding: onboardingText,
+        emi: onboardingText,
+        closureDate: onboardingDate,
+      }),
+    )
+    .max(30)
+    .optional(),
+  investments: z
+    .array(
+      z.object({
+        type: onboardingText,
+        provider: onboardingText,
+        amount: onboardingText,
+        maturityDate: onboardingDate,
+        expectedReturn: onboardingText,
+      }),
+    )
+    .max(30)
+    .optional(),
+  communicationChannels: z.array(z.string().max(40)).max(10).optional(),
+  preferredTime: onboardingText,
+  bestDay: onboardingText,
+  engagementTopics: z.array(z.string().max(80)).max(20).optional(),
+  interests: z.array(z.string().max(80)).max(20).optional(),
+  importantDates: z
+    .array(
+      z.object({
+        type: onboardingText,
+        date: onboardingDate,
+        description: onboardingText,
+      }),
+    )
+    .max(30)
+    .optional(),
+  language: onboardingText,
+  noCallsDuringHours: z.boolean().optional(),
+  whatsappOnly: z.boolean().optional(),
+  initialFollowup: z
+    .object({
+      enabled: z.boolean(),
+      date: onboardingDate,
+      channel: z.enum(channels).optional(),
+      notes: onboardingText,
+    })
+    .refine(
+      (v) =>
+        !v.enabled || (!!v.date && !!v.notes && v.notes.trim().length >= 2),
+      "Add a date and notes for the follow-up",
+    )
+    .optional(),
+});
 export const phone = z
   .string()
   .transform((v) => v.replace(/[\s()-]/g, ""))
@@ -68,6 +169,7 @@ export const clientSchema = z.object({
   loanInterest: optionalText,
   preferredContact: optionalText,
   notesText: optionalText,
+  onboardingProfile: onboardingProfileSchema.optional(),
   registrationNumber: optionalText,
   industry: optionalText,
   allowDuplicate: z.boolean().default(false),

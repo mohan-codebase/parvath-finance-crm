@@ -4329,3 +4329,78 @@ select.role-select {
   min-height: 32px;
   padding: 6px;
 }
+
+/* Client onboarding, based on the five reference steps and completion screen. */
+.onboarding { max-width: 1380px; margin: 0 auto; }
+.onboarding-layout { display: block; }
+.onboarding-main { min-height: 0; padding: 20px 24px; }
+.onboarding .stepper { min-height: 58px; padding: 8px 16px; gap: 8px; }
+.onboarding .stepper > button { font-size: 12px; gap: 9px; align-items: center; }
+.onboarding .stepper > button > span { width: 30px; height: 30px; font-size: 13px; }
+.onboarding .onboarding-main h2 { font-size: 19px; }
+.onboarding .onboarding-main .panel-heading { margin-bottom: 18px; }
+.onboarding .form-grid { gap: 16px 22px; max-width: 920px; }
+.onboarding .form-grid input:not([type="radio"]), .onboarding .form-grid select { height: 39px; }
+.onboarding .form-grid label { font-size: 12px; }
+.onboarding .form-grid fieldset { min-width: 0; }
+.onboard-photo-inline { display: flex; align-items: center; gap: 14px; grid-column: 1 / -1; }
+.onboard-photo-inline > div:last-child { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.onboard-photo-inline strong { font-size: 12px; }
+.onboard-photo-inline button { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--color-border); border-radius: 5px; padding: 8px 12px; color: var(--teal); background: white; }
+.onboard-photo-inline small { font-size: 10px; color: var(--color-muted); }
+.onboard-avatar { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; flex: none; background: #e6f5fa; color: #0872bf; font-size: 22px; font-weight: 700; }
+.onboard-sections { display: grid; gap: 13px; }
+.onboard-sections.two-columns, .onboard-fields.two-columns, .onboard-split.two-columns, .onboard-review .two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.onboard-sections.two-columns > div, .onboard-review .two-columns > div { display: grid; gap: 13px; align-content: start; min-width: 0; }
+.onboard-section { border: 1px solid var(--color-border); border-radius: 7px; padding: 13px 15px; background: var(--color-surface, #fff); min-width: 0; }
+.onboard-section-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid var(--color-border); padding-bottom: 8px; margin-bottom: 12px; }
+.onboard-section h3 { margin: 0; font-size: 15px; color: var(--color-heading); }
+.onboard-section h4 { font-size: 12px; margin: 13px 0 8px; color: var(--color-heading); }
+.onboard-fields { display: grid; gap: 10px; }
+.onboard-fields.three-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.onboard-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; font-size: 11px; color: var(--color-muted); font-weight: 600; }
+.onboard-field input, .onboard-field select, .onboard-field textarea { width: 100%; height: 35px; min-width: 0; padding: 7px 9px; font-size: 12px; font-weight: 400; color: var(--color-ink); }
+.onboard-field textarea { min-height: 65px; height: auto; resize: vertical; }
+.onboard-field input[readonly] { background: var(--color-surface-soft); }
+.onboard-inline { display: flex; align-items: center; gap: 7px; font-size: 11px; margin: 7px 0; color: var(--color-ink); }
+.onboard-inline input, .onboard-check-grid input { accent-color: var(--teal); width: 14px; height: 14px; }
+.onboard-check-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 12px; }
+.onboard-check-grid label { display: flex; gap: 7px; align-items: center; font-size: 11px; }
+.onboard-help { font-size: 11px; color: var(--color-muted); margin: 0 0 10px; }
+.onboard-rows { overflow-x: auto; }
+.onboard-rows-head, .onboard-row { display: grid; grid-template-columns: repeat(var(--row-columns, 3), minmax(90px, 1fr)) 34px; gap: 6px; align-items: center; min-width: max-content; }
+.onboard-rows-head { font-size: 10px; color: var(--color-muted); font-weight: 700; padding: 6px 0; }
+.onboard-row { margin-bottom: 5px; }
+.onboard-row input { height: 32px; min-width: 90px; padding: 5px 7px; font-size: 11px; }
+.onboard-row > button { border: 0; background: transparent; color: #b8373d; display: grid; place-items: center; }
+.onboard-add, .onboard-edit { display: inline-flex; gap: 4px; align-items: center; border: 1px solid #cce9e5; border-radius: 5px; background: #f2fbf9; color: #087f77; padding: 5px 8px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.onboard-rows > .onboard-add { border: 0; background: transparent; padding: 5px 0; }
+.onboard-review-identity { display: flex; align-items: center; gap: 13px; border: 1px solid var(--color-border); border-radius: 7px; padding: 13px; margin-bottom: 13px; }
+.onboard-review-identity > div:nth-child(2) { flex: 1; }
+.onboard-review-identity h2 { margin: 0 0 4px; }
+.onboard-review-identity p { font-size: 11px; color: var(--color-muted); margin: 0; }
+.onboard-summary { margin: 0; }
+.onboard-summary > div { display: grid; grid-template-columns: 42% 58%; gap: 7px; font-size: 11px; padding: 4px 0; }
+.onboard-summary dt { color: var(--color-muted); }
+.onboard-summary dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.onboard-shortcuts { display: flex; gap: 14px; margin: 10px 0 0; }
+.onboard-shortcuts button, .onboard-shortcuts a { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: var(--teal); font-size: 11px; padding: 4px; }
+.onboarding .form-footer { margin-top: 10px; }
+.onboarding .form-footer .primary { min-height: 39px; padding: 9px 18px; }
+.onboard-success-page { min-height: calc(100vh - 120px); display: grid; place-items: center; position: relative; background: #e8f1f7; padding: 32px; overflow: hidden; }
+.onboard-success-card { position: relative; z-index: 1; width: min(520px, 100%); background: white; padding: 33px 30px; border-radius: 11px; box-shadow: 0 18px 48px #173c5a1a; text-align: center; }
+.onboard-success-icon { width: 78px; height: 78px; border-radius: 50%; background: #169a8c; color: white; display: grid; place-items: center; margin: -65px auto 22px; box-shadow: 0 12px 25px #159a8c44; }
+.onboard-success-card h1 { color: #173968; font-size: 25px; margin: 0 0 10px; }
+.onboard-success-card > p { font-size: 13px; line-height: 1.5; color: #4d6077; margin: 0 auto 22px; max-width: 330px; }
+.onboard-success-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.onboard-success-actions a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; min-height: 75px; border: 1px solid #d8e5eb; border-radius: 7px; color: #183968; font-size: 12px; font-weight: 600; }
+.onboard-success-actions svg { color: #108d85; }
+.onboard-another { display: inline-block; color: #1c5a8b; font-size: 11px; margin-top: 23px; }
+.onboard-confetti { position: absolute; top: 13%; left: 50%; width: 280px; height: 150px; transform: translateX(-50%); background: radial-gradient(circle at 5% 30%, #f4b544 0 3px, transparent 4px), radial-gradient(circle at 24% 75%, #6d85e8 0 3px, transparent 4px), radial-gradient(circle at 67% 10%, #c756d3 0 3px, transparent 4px), radial-gradient(circle at 83% 56%, #12a799 0 3px, transparent 4px); }
+@media (max-width: 760px) { .onboard-sections.two-columns, .onboard-fields.two-columns, .onboard-split.two-columns, .onboard-review .two-columns { grid-template-columns: 1fr; } .onboard-fields.three-columns { grid-template-columns: 1fr 1fr; } .onboard-shortcuts { flex-wrap: wrap; } .onboard-success-page { padding: 70px 15px; } }
+.onboard-profile-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.onboard-profile-details h3, .onboard-profile-list h3 { font-size: 14px; margin: 0 0 8px; }
+.onboard-profile-list { border-top: 1px solid var(--color-border); padding-top: 12px; margin-top: 12px; }
+.onboard-profile-list p { font-size: 11px; margin-bottom: 8px; }
+.onboard-profile-list > div { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 12px; border-top: 1px solid var(--color-border); }
+@media (max-width: 760px) { .onboard-profile-details { grid-template-columns: 1fr; } }

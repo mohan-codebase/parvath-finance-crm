@@ -55,6 +55,13 @@ export async function migrateDatabase() {
         validationLevel: "strict",
         validationAction: "error",
       });
+    if (model.collection === "Client" && existing.has("Client"))
+      await db.native
+        .collection("Client")
+        .updateMany(
+          { onboardingJson: { $exists: false } },
+          { $set: { onboardingJson: null } },
+        );
     const collection = db.native.collection(model.collection);
     await collection.createIndex(
       { id: 1 },

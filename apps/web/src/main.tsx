@@ -15,6 +15,7 @@ const Dashboard = lazy(() => import("./Dashboard"));
 import Clients from "./Clients";
 import ClientProfile from "./ClientProfile";
 import ClientForm from "./ClientForm";
+import ClientSuccess from "./ClientSuccess";
 import ImportClients from "./ImportClients";
 import Leads from "./Leads";
 import Worklists from "./Worklists";
@@ -70,6 +71,7 @@ function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="clients" element={<Clients />} />
               <Route path="clients/new" element={<ClientForm />} />
+              <Route path="clients/:id/success" element={<ClientSuccess />} />
               <Route path="clients/import" element={<ImportClients />} />
               <Route path="clients/:id" element={<ClientProfile />} />
               <Route path="clients/:id/edit" element={<ClientForm />} />
